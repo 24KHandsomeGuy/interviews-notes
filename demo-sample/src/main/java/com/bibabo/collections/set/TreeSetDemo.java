@@ -1,9 +1,8 @@
 package com.bibabo.collections.set;
 
-import collections.map.Demo;
+import com.bibabo.collections.map.Demo;
 
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.TreeSet;
 
 /**

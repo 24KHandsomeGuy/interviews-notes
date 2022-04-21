@@ -1,6 +1,6 @@
 package com.bibabo.jvm;
 
-import jdk.dynamicProxy.HelloService;
+import com.bibabo.dynamicProxy.HelloService;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;

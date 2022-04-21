@@ -1,8 +1,8 @@
 package com.bibabo.redis.redisson.atomic;
 
+import com.bibabo.redis.redisson.common.RedissonCommonUtil;
 import org.redisson.api.RAtomicLong;
 import org.redisson.api.RedissonClient;
-import redis.redisson.common.RedissonCommonUtil;
 
 /**
  * @author fukuixiang

@@ -1,6 +1,6 @@
 package com.bibabo.demo1;
 
-import demo.OuterClass1;
+import com.bibabo.demo.OuterClass1;
 
 public class Test {
     public static void main(String[] args) {

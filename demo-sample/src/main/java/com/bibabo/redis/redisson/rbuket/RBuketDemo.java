@@ -1,8 +1,8 @@
 package com.bibabo.redis.redisson.rbuket;
 
+import com.bibabo.redis.redisson.common.RedissonCommonUtil;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
-import redis.redisson.common.RedissonCommonUtil;
 
 /**
  * @author fukuixiang

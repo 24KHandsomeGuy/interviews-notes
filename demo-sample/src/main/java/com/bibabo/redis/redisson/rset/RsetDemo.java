@@ -1,11 +1,11 @@
 package com.bibabo.redis.redisson.rset;
 
+import com.bibabo.redis.redisson.RSkuMain;
 import org.redisson.Redisson;
 import org.redisson.api.RSet;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 import org.redisson.config.SentinelServersConfig;
-import redis.redisson.RSkuMain;
 
 import java.util.Arrays;
 import java.util.HashSet;

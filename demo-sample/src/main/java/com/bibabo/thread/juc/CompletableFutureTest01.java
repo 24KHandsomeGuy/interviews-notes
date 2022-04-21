@@ -1,6 +1,6 @@
 package com.bibabo.thread.juc;
 
-import thread.ConcurrentQueryDemo;
+import com.bibabo.thread.ConcurrentQueryDemo;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;

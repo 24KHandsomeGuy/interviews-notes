@@ -1,10 +1,10 @@
 package com.bibabo.zookeeper.curator;
 
+import com.bibabo.thread.threadPool.threadfactory.CustomizableThreadFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.apache.curator.retry.RetryOneTime;
-import thread.threadPool.threadfactory.CustomizableThreadFactory;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
