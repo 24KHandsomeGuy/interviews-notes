@@ -330,3 +330,66 @@ auth 123456
 
 
 
+# SpringBoot使用脚本启动、关闭
+
+## linux上创建脚本：touch start.sh、touch stop.sh
+
+chmod 777 整个项目文件夹
+
+#### 1.编写启动脚本vim start.sh
+
+可以本地编写好复制，参考nacos的启动脚本
+
+```shell
+
+r_exit ()
+{
+    echo "ERROR: $1 !!"
+    exit 1
+}
+
+[ ! -e "$JAVA_HOME/bin/java" ] && JAVA_HOME=$HOME/jdk/java
+[ ! -e "$JAVA_HOME/bin/java" ] && JAVA_HOME=/usr/java
+[ ! -e "$JAVA_HOME/bin/java" ] && error_exit "Please set the JAVA_HOME variable in your environment, We need java(x64)!"
+
+export JAVA_HOME
+export JAVA="$JAVA_HOME/bin/java"
+
+JAVA_OPT="${JAVA_OPT} -server -Xms128m -Xmx128m -Xmn43M -Xss512k -XX:PermSize64m -XX:MaxPermSize64m"
+JAVA_OPT="${JAVA_OPT} -XX:+UseConcMarkSweepGC -XX:+UseCMSCompactAtFullCollection -XX:CMSInitiatingOccupancyFraction=70 -XX:+CMSParallelRemarkEnabled -XX:SoftRefLRUPolicyMSPerMB=0 -XX:+CMSClassUnloadingEnabled -XX:SurvivorRatio=8  -XX:-UseParNewGC"
+JAVA_OPT="${JAVA_OPT} -XX:+PrintGCDateStamps -XX:+PrintGCDetails -Xloggc:/data/bibabo-sms/gclogs/bibabo-sms-gc.log"
+JAVA_OPT="${JAVA_OPT} -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data/bibabo-sms/javadump/bibabo-sms-jvmdump.hprof"
+
+nohup $JAVA -jar /data/bibabo-sms/bibabo-sms-0.0.1-SNAPSHOT.jar ${JAVA_OPT} &
+tail -f nohup.out
+```
+
+启动
+
+```bash
+sh start.sh
+```
+
+startup.log查看是否启动成功
+
+#### 2.编写关闭脚本vim stop.sh
+
+```shell
+#过滤掉grep进程，找到第二个，也就是pid
+PID=$(ps -ef | grep bibabo-sms | grep -v grep | awk '{ print $2 }')
+if [ -z "$PID" ]
+then
+    echo Application is already stopped
+else
+    echo kill $PID
+    kill $PID
+    echo stop $PID successfully
+fi
+```
+
+关闭
+
+```bash
+sh stop.sh
+```
+
