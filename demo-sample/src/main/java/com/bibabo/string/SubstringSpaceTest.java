@@ -12,7 +12,8 @@ public class SubstringSpaceTest {
 
         String s = "abc efg";
 
-        System.out.println(s.indexOf(" "));
-
+        int spaceIdx = s.indexOf(" ");
+        System.out.println(spaceIdx);
+        System.out.println(s.substring(0, spaceIdx));
     }
 }
