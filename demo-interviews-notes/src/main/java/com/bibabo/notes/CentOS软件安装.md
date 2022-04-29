@@ -393,3 +393,69 @@ fi
 sh stop.sh
 ```
 
+# Sentinel控制台
+
+### github上有控制台安装教程
+
+[https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0](https://github.com/alibaba/Sentinel/wiki/控制台)
+
+### 下载jar
+
+```bash
+wget https://github.com/alibaba/Sentinel/releases/download/1.8.4/sentinel-dashboard-1.8.4.jar
+```
+
+sentinel控制台直接通过jar包启动，每次都需要配置端口和jvm参数，打成shell脚本启动
+
+```bash
+touch start.sh
+```
+
+```shell
+r_exit ()
+{
+    echo "ERROR: $1 !!"
+    exit 1
+}
+
+[ ! -e "$JAVA_HOME/bin/java" ] && JAVA_HOME=$HOME/jdk/java
+[ ! -e "$JAVA_HOME/bin/java" ] && JAVA_HOME=/usr/java
+[ ! -e "$JAVA_HOME/bin/java" ] && error_exit "Please set the JAVA_HOME variable in your environment, We need java(x64)!"
+
+export JAVA_HOME
+export JAVA="$JAVA_HOME/bin/java"
+
+JAVA_SERVER_OPT="${JAVA_SERVER_OPT} -Dserver.port=9090 -Dcsp.sentinel.dashboard.server=localhost:9090 -Dproject.name=sentinel-dashboard"
+JAVA_OPT="${JAVA_OPT} -server -Xms128m -Xmx128m -Xmn43M -Xss512k -XX:PermSize64m -XX:MaxPermSize64m"
+JAVA_OPT="${JAVA_OPT} -XX:+UseConcMarkSweepGC -XX:+UseCMSCompactAtFullCollection -XX:CMSInitiatingOccupancyFraction=70 -XX:+CMSParallelRemarkEnabled -XX:SoftRefLRUPolicyMSPerMB=0 -XX:+CMSClassUnloadingEnabled -XX:SurvivorRatio=8  -XX:-UseParNewGC"
+JAVA_OPT="${JAVA_OPT} -XX:+PrintGCDateStamps -XX:+PrintGCDetails -Xloggc:/data/sentinel-dashboard-1.8.4/gclogs/sentinel-dashboard-gc.log"
+JAVA_OPT="${JAVA_OPT} -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data/sentinel-dashboard-1.8.4/javadump/sentinel-dashboard-1.8.4-jvmdump.hprof"
+
+nohup $JAVA $JAVA_SERVER_OPT -jar /data/sentinel-dashboard-1.8.4/sentinel-dashboard-1.8.4.jar ${JAVA_OPT} &
+tail -f nohup.out
+```
+
+```bash
+touch shutdown.sh
+```
+
+```shell
+#过滤掉grep进程，找到第二个，也就是pid
+PID=$(ps -ef | grep sentinel | grep -v grep | awk '{ print $2 }')
+if [ -z "$PID" ]
+then
+    echo Application is already stopped
+else
+    echo kill $PID
+    kill $PID
+    echo stop $PID successfully
+fi
+```
+
+端口9090 sentinel sentinel
+
+
+
+# Nacos
+
+sh startup.sh -m standalone
