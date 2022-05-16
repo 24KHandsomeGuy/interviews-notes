@@ -326,6 +326,11 @@ redis-cli登录
 auth 123456
 ```
 
+### 通过Sentinel 找到master地址
+```redis
+redis-cli -h  redis.uat.chunbo.com -p  26381
+SENTINEL get-master-addr-by-name
+```
 
 
 
