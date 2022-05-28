@@ -144,14 +144,32 @@ public class MyBeanPostProcessor implements BeanPostProcessor {
 }
 ```
 
-
+ApplicationContextAware接口可以拿到ApplicationContext上下文
 
 ### 赋值组件（自动装配）
 
+#### @Value
 
+1.支持基本数据类型、String类型 @Value("hahaha")
+
+2.支持Spring EL表达式 @Value("#{8-5}")
+
+3.支持配置文件中读取 @Value(${xxx})
+
+
+
+#### @PropertySource
+
+```
+@PropertySource
+```
 
 ### 织入组件
 
-
-
 ### 切面组件
+
+
+
+## 手写Spring
+
+![1652879280483](./1652879280483.png)

@@ -21,6 +21,7 @@ yun install lrzsz
 netstat -ntlp
 ```
 
+wget https 地址后需要跟--no-check-certificate
 
 
 # 安装OpenJDK
@@ -464,3 +465,106 @@ fi
 # Nacos
 
 sh startup.sh -m standalone
+
+
+# Seata
+
+### 下载Seata-Server
+
+```bash
+wget https://github.com/seata/seata/releases/download/v1.3.0/seata-server-1.3.0.tar.gz --no-check-certificate
+```
+
+### 调整shell脚本的JVM启动参数
+
+找到bin目录下的seata-server.sh，修改JVM启动参数，调小内存分配
+
+```shell
+$JAVA_OPTS -server -Xmx256m -Xms256m -Xmn128m -Xss512k -XX:SurvivorRatio=10 -XX:MetaspaceSize=32m -XX:MaxMetaspaceSize=64m -XX:MaxDirectMemorySize=64m
+```
+
+### Server配置
+
+#### 初始化Seata所需表
+
+https://github.com/seata/seata/blob/develop/script/server/db/mysql.sql
+
+#### 修改server端的配置文件
+
+通过registry.conf寻找配置中心、注册中心
+
+默认使用本地磁盘file.conf
+
+更改配置中心、注册中心为nacos
+
+```conf
+registry {
+  type = "nacos"
+  nacos {
+    application = "seata-server"
+    serverAddr = "127.0.0.1:8848"
+    group = "BIBABO_SEATA_GROUP"
+    namespace = ""
+    cluster = "default"
+    username = "nacos"
+    password = "nacos"
+  }
+}
+
+config {
+  type = "nacos"
+  nacos {
+    serverAddr = "127.0.0.1:8848"
+    namespace = ""
+    group = "BIBABO_SEATA_GROUP"
+    username = "nacos"
+    password = "nacos"
+  }
+}
+```
+
+#### 把Seata客户端服务端所需配置通过脚本注册到nacos上
+
+在server的服务器seata目录下操作
+
+https://github.com/seata/seata/blob/develop/script/config-center/config.txt
+
+https://github.com/seata/seata/blob/develop/script/config-center/nacos/nacos-config.sh
+
+将config.txt放到seata目录下，将nacos-config.sh放到seata/bin目录下
+
+执行注册配置脚本
+
+```shell
+sh nacos-config.sh -h 127.0.0.1 -p 8848 -g BIBABO_SEATA_GROUP -u nacos -w nacos
+```
+
+#### 修改服务端所需配置
+
+##### 把server端所需存储放到mysql上
+
+建库bibabo_seata
+
+建表https://github.com/seata/seata/blob/develop/script/server/db/mysql.sql
+
+##### 到nacos修改store相关配置
+
+修改store.mode=db;
+
+修改store.db.url、username、password...
+
+#### 启动Seata-Server
+
+```bash
+nohup ./seata-server.sh > seata.log 2>&1 &
+```
+
+默认端口8091
+
+
+
+### Client配置
+
+AT模式下所需的undo_log表
+
+https://github.com/seata/seata/blob/develop/script/client/at/db/mysql.sql

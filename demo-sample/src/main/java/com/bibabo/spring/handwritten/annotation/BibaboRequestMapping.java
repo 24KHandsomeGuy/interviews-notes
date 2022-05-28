@@ -81,14 +81,6 @@ import java.lang.annotation.Target;
 @Mapping
 public @interface BibaboRequestMapping {
 
-	/**
-	 * Assign a name to this mapping.
-	 * <p><b>Supported at the type level as well as at the method level!</b>
-	 * When used on both levels, a combined name is derived by concatenation
-	 * with "#" as separator.
-	 * @see org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder
-	 * @see org.springframework.web.servlet.handler.HandlerMethodMappingNamingStrategy
-	 */
 	String name() default "";
 
 	/**
@@ -103,7 +95,7 @@ public @interface BibaboRequestMapping {
 	 * explicitly is effectively mapped to an empty path.
 	 */
 	@AliasFor("path")
-	String[] value() default {};
+	String value() default "";
 
 	/**
 	 * The path mapping URIs (e.g. {@code "/profile"}).
@@ -119,7 +111,7 @@ public @interface BibaboRequestMapping {
 	 * @since 4.2
 	 */
 	@AliasFor("value")
-	String[] path() default {};
+	String path() default "";
 
 	/**
 	 * The HTTP request methods to map to, narrowing the primary mapping:
