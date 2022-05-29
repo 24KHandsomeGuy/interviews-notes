@@ -568,3 +568,18 @@ nohup ./seata-server.sh > seata.log 2>&1 &
 AT模式下所需的undo_log表
 
 https://github.com/seata/seata/blob/develop/script/client/at/db/mysql.sql
+
+下为使用注册中心查找seata-server地址，不需要配置service.bibabo.grouplist
+```yaml
+###seata
+seata:
+  registry:
+    type: nacos
+    nacos:
+      cluster: default
+      server-addr: 114.116.44.130:8848
+      group: BIBABO_SEATA_GROUP
+      username: nacos
+      password: nacos
+      application: seata-server
+```
