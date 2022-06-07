@@ -1,4 +1,4 @@
-CentOs7+
+CentOS7+
 
 # 虚拟机或云服务器ECS（Elastic Compute Service）弹性计算服务IaaS（Infrastructure as a Service）
 
@@ -21,8 +21,25 @@ yun install lrzsz
 netstat -ntlp
 ```
 
+安装wget
+```bash
+yum -y install wget
+```
 wget https 地址后需要跟--no-check-certificate
 
+#CentOS异常情况总结
+###1.阿里云镜像yun失效
+"Could not resolve host: mirrors.cloud.aliyuncs.com; Unknown error"
+已经安装了wget 但还是报错，一般是原来的wget初始化有文件损坏造成的。
+yum remove wget卸载掉重新安装
+
+# 安装mysql
+
+密码123456
+
+登录mysql   ./mysql -u root -p   *#bin目录下*
+
+启动mysql   service mysql start
 
 # 安装OpenJDK
 
@@ -583,3 +600,139 @@ seata:
       password: nacos
       application: seata-server
 ```
+
+# Canal
+
+### MySQL配置
+
+#### 开启binlog
+
+进入mysql查看是否启动binlog
+
+```sql
+SHOW VARIABLES LIKE '%log_bin%';
+```
+
+| Variable_name | Value |
+| :------------ | ----- |
+| log_bin       | OFF   |
+
+OFF说明目前是关闭状态的，需要修改mysql配置文件启动log_bin
+
+linux在/etc/my.cnf
+
+```cnf
+[mysqld]
+log-bin=mysql-bin # 开启 binlog
+binlog-format=ROW # 选择 ROW 模式
+server_id=1 # 配置 MySQL replaction 需要定义，不要和 canal 的 slaveId 重复
+```
+
+重启mysql service mysql restart
+
+#### 创建canal账号
+
+登录mysql   ./mysql -u root -p   *#bin目录下*
+
+授权 canal 链接 MySQL 账号具有作为 MySQL slave 的权限, 如果已有账户可直接 grant
+
+```sql
+CREATE USER canal IDENTIFIED BY 'canal';  
+GRANT SELECT, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'canal'@'%';
+-- GRANT ALL PRIVILEGES ON *.* TO 'canal'@'%' ;
+FLUSH PRIVILEGES;
+```
+
+### 安装canal
+
+- 下载 canal, 访问 [release 页面](https://github.com/alibaba/canal/releases) , 选择需要的包下载, 如以 1.1.4 版本为例
+
+  ```bash
+  wget https://github.com/alibaba/canal/releases/download/canal-1.1.4/canal.deployer-1.1.4.tar.gz
+  ```
+
+- 解压缩
+
+  ```
+  mkdir /data/canal-1.1.4
+  tar -zxvf canal.deployer-1.1.4.tar.gz  -C /data/canal-1.1.4
+  ```
+
+  - 解压完成后，进入 /data/canal 目录，可以看到如下结构
+
+    ```
+    drwxr-xr-x 2 jianghang jianghang  136 2013-02-05 21:51 bin
+    drwxr-xr-x 4 jianghang jianghang  160 2013-02-05 21:51 conf
+    drwxr-xr-x 2 jianghang jianghang 1.3K 2013-02-05 21:51 lib
+    drwxr-xr-x 2 jianghang jianghang   48 2013-02-05 21:29 logs
+    ```
+
+- 配置修改
+
+  ```
+  vi conf/example/instance.properties
+  ```
+
+  ```
+  ## mysql serverId
+  canal.instance.mysql.slaveId = 1234
+  #position info，需要改成自己的数据库信息
+  canal.instance.master.address = 127.0.0.1:3306 
+  canal.instance.master.journal.name = 
+  canal.instance.master.position = 
+  canal.instance.master.timestamp = 
+  #canal.instance.standby.address = 
+  #canal.instance.standby.journal.name =
+  #canal.instance.standby.position = 
+  #canal.instance.standby.timestamp = 
+  #username/password，需要改成自己的数据库信息
+  canal.instance.dbUsername = canal  
+  canal.instance.dbPassword = canal
+  canal.instance.defaultDatabaseName =
+  canal.instance.connectionCharset = UTF-8
+  #table regex
+  canal.instance.filter.regex = .\*\\\\..\*
+  ```
+
+  - canal.instance.connectionCharset 代表数据库的编码方式对应到 java 中的编码类型，比如 UTF-8，GBK , ISO-8859-1
+  - 如果系统是1个 cpu，需要将 canal.instance.parser.parallel 设置为 false (conf/canal.properties)
+
+- 启动
+
+  ```
+  sh bin/startup.sh
+  ```
+
+- 查看 server 日志
+
+  ```
+  vi logs/canal/canal.log</pre>
+  ```
+
+  ```
+  2013-02-05 22:45:27.967 [main] INFO  com.alibaba.otter.canal.deployer.CanalLauncher - ## start the canal server.
+  2013-02-05 22:45:28.113 [main] INFO  com.alibaba.otter.canal.deployer.CanalController - ## start the canal server[10.1.29.120:11111]
+  2013-02-05 22:45:28.210 [main] INFO  com.alibaba.otter.canal.deployer.CanalLauncher - ## the canal server is running now ......
+  ```
+
+- 查看 instance 的日志
+
+  ```
+  vi logs/example/example.log
+  ```
+
+  ```
+  2013-02-05 22:50:45.636 [main] INFO  c.a.o.c.i.spring.support.PropertyPlaceholderConfigurer - Loading properties file from class path resource [canal.properties]
+  2013-02-05 22:50:45.641 [main] INFO  c.a.o.c.i.spring.support.PropertyPlaceholderConfigurer - Loading properties file from class path resource [example/instance.properties]
+  2013-02-05 22:50:45.803 [main] INFO  c.a.otter.canal.instance.spring.CanalInstanceWithSpring - start CannalInstance for 1-example 
+  2013-02-05 22:50:45.810 [main] INFO  c.a.otter.canal.instance.spring.CanalInstanceWithSpring - start successful....
+  ```
+
+  **一开始启动不了，报各种CPU 内存的错误，怀疑内存不足造成的，修改startup.sh脚本**
+
+- 关闭
+
+  ```
+  sh bin/stop.sh
+  ```
+
