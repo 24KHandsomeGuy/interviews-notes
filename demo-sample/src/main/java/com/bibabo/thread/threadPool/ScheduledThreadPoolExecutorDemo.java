@@ -18,8 +18,8 @@ public class ScheduledThreadPoolExecutorDemo {
     public static void main(String[] args) throws InterruptedException {
         System.out.println("CPU个数：" + CPU_CNT);
 
-        for (int i = 0; i < 10000;i ++) {
-            executor.schedule(new Task(1), 5, TimeUnit.SECONDS);
+        for (int i = 0; i < 1;i ++) {
+            executor.schedule(new Task(1), 15, TimeUnit.SECONDS);
         }
 
         Thread.sleep(100000);
@@ -49,7 +49,6 @@ public class ScheduledThreadPoolExecutorDemo {
                 return;
             }
             this.setResult(++ result);
-            executor.schedule(this,5 , TimeUnit.SECONDS);
         }
     }
 }
