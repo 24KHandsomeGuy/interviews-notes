@@ -764,3 +764,86 @@ FLUSH PRIVILEGES;
       那如果Mysql更新成功，Redis删除失败，可以使事务回滚，但如此的话业务的侵入性就变的很大。
       这里采用Canal伪装成Mysql的Slave节点同步binlog，拿到DML语句做增量同步Redis的最终一致性处理
 ```
+
+
+# Elasticsearch
+
+安装前需要root权限初始化一下内核参数和系统配置：
+
+```bash
+if [ `ulimit -n` -lt 65535 ];then ulimit -n 65535;echo -e "* soft nofile 65535\n* hard nofile 65535" >>/etc/security/limits.conf;fi
+echo 'vm.max_map_count=262144' >> /etc/sysctl.conf
+sysctl -p
+```
+
+# 单机部署
+
+下载LINUX X86_64格式的安装包，解压即可用了。
+
+```bash
+tar -zxf elasticsearch-7.2.1-linux-x86_64.tar.gz
+useradd es
+chown -R es:es elasticsearch-7.2.1*
+#切换到es用户，es需要使用非root用户才能启动
+su es
+cd elasticsearch-7.2.1
+bin/elasticsearch-certutil ca
+bin/elasticsearch-certutil cert --ca elastic-stack-ca.p12
+mv elastic-* config/
+```
+
+编辑elasticsearch.yml
+
+> 注意network.host参数，如果es只允许本机访问，则不需要配置；如果需要其他主机访问则配置为当前主机ip。
+
+```bash
+#vim config/elasticsearch.yml
+network.host: 192.168.0.12
+discovery.type: single-node
+
+xpack.security.enabled: true
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: certificate
+xpack.security.transport.ssl.keystore.path: elastic-certificates.p12
+xpack.security.transport.ssl.truststore.path: elastic-certificates.p12
+```
+
+创建keystore
+
+```undefined
+bin/elasticsearch-keystore create
+```
+
+启动es:
+
+```bash
+#deaminzie启动
+bin/elasticsearch  -d
+#前台启动
+bin/elasticsearch
+
+#推荐第一次使用前台启动，便于发现问题，如果前台启动直接报错:Killed 无其它日志，则应该是你服务器内存不足了，es默认堆栈为1g，在config/jvm.properties  ## -Xms4g  -Xmx4g 调整一下即可。
+```
+
+接下来给es设置密码：
+
+```bash
+#手动或自动设置密码，二选一
+bin/elasticsearch-setup-passwords interactive
+
+bin/elasticsearch-setup-passwords auto
+```
+
+测试es是否正常工作：
+
+```cpp
+curl http://elastic:your_password@your_ip:9200
+```
+
+**所有ES相关操作需要使用es用户，先配置密码，再修改config/elasticsearch.yml#network.host:0.0.0.0**
+
+
+
+#Git
+密钥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
+
