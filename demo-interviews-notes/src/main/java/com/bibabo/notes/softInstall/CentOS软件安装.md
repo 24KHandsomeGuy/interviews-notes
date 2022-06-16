@@ -843,6 +843,43 @@ curl http://elastic:your_password@your_ip:9200
 **所有ES相关操作需要使用es用户，先配置密码，再修改config/elasticsearch.yml#network.host:0.0.0.0**
 
 
+# Kibana
+*和Es放到同一台机器就无法使用，而且会把Es直接搞挂掉，很奇怪*
+
+### 解压
+```bash
+tar -zxf kibana-7.2.1-linux-x86_64.tar.gz
+useradd es
+chown -R es:es kibana-7.2.1*
+#切换到es用户，kibana需要使用非root用户才能启动
+su es
+```
+
+### 配置
+vim config/kibana.yml
+```yaml
+server.port: 5601
+server.host: "0.0.0.0" ##对外暴露ip，因为云服务器，0.0.0.0会自动暴露公网ip
+elasticsearch.hosts: ["http://39.107.156.177:9200"] ## Es地址
+kibana.index: ".kibana" ## index Kibana在Es上的索引
+elasticsearch.username: "elastic"
+elasticsearch.password: "123456"
+```
+vim /bin/kibana 修改nodejs的堆内存大小为200M
+```shell
+NODE_OPTIONS="$NODE_OPTIONS --max-old-space-size=200" 
+NODE_ENV=production BROWSERSLIST_IGNORE_OLD_DATA=true exec "${NODE}" --no-warnings --max-http-header-size=65536 $NODE_OPTIONS "${DIR}/src/cli" ${@}
+```
+
+### 启动
+```bash
+nohup ./kibana &
+```
+
+### 访问
+http://114.116.44.130:5601
+账号访问Kibana: elastic  123456
+
 
 #Git
 密钥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
