@@ -891,6 +891,7 @@ nohup java -jar -Xms128m -Xmx128m -Xmn43M -XX:MetaspaceSize32m -XX:MaxMetaspaceS
 ```bash
 java -jar -Xms64m -Xmx64m -Xmn32M zipkin-server-2.23.16-exec.jar --STORAGE_TYPE=elasticsearch --ES_HOSTS=localhost:9200 --ES_USERNAME=elastic --ES_PASSWORD=123456  -java.tmp.dir=/data/zipkin/temp >/dev/null >zipkin.log 2>&1 & echo $! > pidfile.txt
 ```
+http://39.107.156.177:9411
 
 #Git
 密钥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
