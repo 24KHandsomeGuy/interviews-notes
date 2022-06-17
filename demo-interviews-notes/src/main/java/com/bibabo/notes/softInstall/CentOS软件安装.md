@@ -880,6 +880,14 @@ nohup ./kibana &
 http://114.116.44.130:5601
 账号访问Kibana: elastic  123456
 
+#Zipkin
+链路追踪
+下载jar包
+```bash
+wget https://search.maven.org/remote_content?g=io.zipkin&a=zipkin-server&v=LATEST&c=exec
+nohup java -jar -Xms128m -Xmx128m -Xmn43M -XX:MetaspaceSize32m -XX:MaxMetaspaceSize32m zipkin.jar &
+```
+
 
 #Git
 密钥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
