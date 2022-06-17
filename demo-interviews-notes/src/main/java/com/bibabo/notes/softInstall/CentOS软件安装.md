@@ -887,6 +887,10 @@ http://114.116.44.130:5601
 wget https://search.maven.org/remote_content?g=io.zipkin&a=zipkin-server&v=LATEST&c=exec
 nohup java -jar -Xms128m -Xmx128m -Xmn43M -XX:MetaspaceSize32m -XX:MaxMetaspaceSize32m zipkin.jar &
 ```
+使用ES做持久化存储
+```bash
+java -jar -Xms64m -Xmx64m -Xmn32M zipkin-server-2.23.16-exec.jar --STORAGE_TYPE=elasticsearch --ES_HOSTS=localhost:9200 --ES_USERNAME=elastic --ES_PASSWORD=123456  -java.tmp.dir=/data/zipkin/temp >/dev/null >zipkin.log 2>&1 & echo $! > pidfile.txt
+```
 
 #Git
 密钥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
