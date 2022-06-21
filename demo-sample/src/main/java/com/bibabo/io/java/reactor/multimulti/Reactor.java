@@ -16,6 +16,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class Reactor implements Runnable {
 
+    /**
+     * 1 reactor -> 1 selector
+     */
     private final Selector selector;
 
     private ConcurrentLinkedQueue<AsyncHandler> events = new ConcurrentLinkedQueue<>();

@@ -893,6 +893,26 @@ java -jar -Xms64m -Xmx64m -Xmn32M zipkin-server-2.23.16-exec.jar --STORAGE_TYPE=
 ```
 http://39.107.156.177:9411
 
+#Tidb
+
+#Hadoop
+```text
+1B=8bit
+1KB=1024B
+1MB=1024KB
+1GB=1024MB
+1TB=1024GB
+1PB=1024TB
+1EB=1024PB
+1ZB=1024EB
+1YB=1024ZB
+```
+#Hive
+
+#Hbase
+
+#Spark
+
 #Git
 密钥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
 

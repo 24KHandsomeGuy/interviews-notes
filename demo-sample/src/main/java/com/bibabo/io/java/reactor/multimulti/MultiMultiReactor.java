@@ -27,7 +27,6 @@ public class MultiMultiReactor {
 
     public void start() throws IOException {
         new Acceptor(mainReactor.getSelector(), port);
-        // 可扩展做多线程
         executor.execute(mainReactor);
     }
 
