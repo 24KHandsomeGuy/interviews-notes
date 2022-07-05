@@ -29,6 +29,19 @@ public abstract class RedissonCommonUtil {
         return redissonClient;
     }
 
+    public static RedissonClient aliyunStart() {
+        Config config = new Config();
+        config.useSingleServer()
+                .setAddress("redis://39.107.156.177:6379")
+                .setPassword("123456")
+                .setDatabase(1)
+                .setConnectionMinimumIdleSize(1)
+                .setConnectionPoolSize(2);
+        RedissonClient redissonClient = Redisson.create(config);
+
+        return redissonClient;
+    }
+
     public static boolean shutdown(RedissonClient redissonClient) {
         if (null == redissonClient) {
             return false;

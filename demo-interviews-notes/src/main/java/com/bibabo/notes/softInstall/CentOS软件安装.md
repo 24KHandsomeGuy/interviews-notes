@@ -12,7 +12,7 @@ yum install unzip
 安装rz(读) sz(写)
 
 ```bash
-yun install lrzsz
+yum install lrzsz
 ```
 
 查看tcp端口
@@ -26,6 +26,11 @@ netstat -ntlp
 yum -y install wget
 ```
 wget https 地址后需要跟--no-check-certificate
+
+shell远程同步
+```text
+rsync -av /data/zipkin/ 82.156.216.254:/data/zipkin
+```
 
 #CentOS异常情况总结
 ###1.阿里云镜像yun失效
@@ -124,6 +129,7 @@ echo $JAVA_HOME
 复制下载链接linux下载
 
 https://dlcdn.apache.org/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz
+https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
 
 注意要换成http
 
@@ -885,7 +891,7 @@ http://114.116.44.130:5601
 下载jar包
 ```bash
 wget https://search.maven.org/remote_content?g=io.zipkin&a=zipkin-server&v=LATEST&c=exec
-nohup java -jar -Xms128m -Xmx128m -Xmn43M -XX:MetaspaceSize32m -XX:MaxMetaspaceSize32m zipkin.jar &
+nohup java -jar -Xms128m -Xmx128m -Xmn43M -XX:PermSize=16m -XX:MaxPermSize=32m zipkin-server-2.23.16-exec.jar &
 ```
 使用ES做持久化存储
 ```bash

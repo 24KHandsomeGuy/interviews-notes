@@ -8,18 +8,18 @@ import java.util.Optional;
  * @Date: 2022/6/23 10:53
  * @Description:
  */
-public class MyThreadPool<T extends Runnable> {
+public class MyThreadPool {
 
     private ArrayList<Thread> workerList = new ArrayList();
 
-    private CustomerBlockingQueue<T> queue = new CustomerBlockingQueue<>();
+    private CustomerBlockingQueue<Runnable> queue = new CustomerBlockingQueue<>();
 
     private int threadNums;
 
     public MyThreadPool(int threadNums) {
         this.threadNums = threadNums;
         for (int i = 0; i < this.threadNums; i++) {
-            Worker<T> worker = new Worker<>(queue);
+            Worker<Runnable> worker = new Worker<>(queue);
             Thread t = new Thread(worker, "worker-" + i);
             t.start();
             workerList.add(t);
@@ -30,7 +30,7 @@ public class MyThreadPool<T extends Runnable> {
         this(Runtime.getRuntime().availableProcessors());
     }
 
-    public void execute(T t) {
+    public void execute(Runnable t) {
         queue.add(t);
     }
 
@@ -43,8 +43,6 @@ public class MyThreadPool<T extends Runnable> {
     private static class Worker<T extends Runnable> implements Runnable {
 
         CustomerBlockingQueue<T> queue;
-
-        volatile boolean runFlag = true;
 
         public Worker(CustomerBlockingQueue<T> queue) {
             this.queue = queue;

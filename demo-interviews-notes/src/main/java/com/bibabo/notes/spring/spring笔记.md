@@ -173,3 +173,21 @@ ApplicationContextAware接口可以拿到ApplicationContext上下文
 ## 手写Spring
 
 ![1652879280483](./1652879280483.png)
+
+
+## Spring Boot
+```text
+外部配置加载顺序SpringBoot也可以从以下位置加载配置：
+
+优先级从高到低，高优先级的配置覆盖低优先级的配置，所有的配置会形成互补配置 。
+
+命令行参数。所有的配置都可以在命令行上进行指定；
+来自java:comp/env的JNDI属性；
+Java系统属性（System.getProperties()）；
+操作系统环境变量 ；
+jar包外部的application-{profile}.properties或application.yml(带spring.profile)配置文件
+jar包内部的application-{profile}.properties或application.yml(带spring.profile)配置文件，再来加载不带profile
+jar包外部的application.properties或application.yml(不带spring.profile)配置文件
+jar包内部的application.properties或application.yml(不带spring.profile)配置文件
+@Configuration注解类上的@PropertySource
+```

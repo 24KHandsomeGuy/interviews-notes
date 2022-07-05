@@ -22,10 +22,9 @@ public class BioServerSocekt {
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(9090);
         System.out.println("启动端口9090");
-        Socket socket = null;
         while (!Thread.currentThread().isInterrupted()) {
             // todo 阻塞等待监听连接
-            socket = serverSocket.accept();
+            Socket socket = serverSocket.accept();
             System.out.println("接收客户端连接端口：" + socket.getPort());
             // while (!socket.isClosed()) { // 希望连接可以持续交互
                 // todo 阻塞等待socket输入
@@ -39,10 +38,9 @@ public class BioServerSocekt {
                 bufferedWriter.write("server has receive your request: " + clientStr + "\n");
                 bufferedWriter.flush();
             // }
-        }
-
-        if (socket != null) {
-            socket.close();
+            if (socket != null) {
+                socket.close();
+            }
         }
         serverSocket.close();
     }

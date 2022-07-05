@@ -9,7 +9,7 @@ public class MyThreadPoolTest {
 
     public static void main(String[] args) throws InterruptedException {
 
-        MyThreadPool<Runner> myThreadPool = new MyThreadPool<>();
+        MyThreadPool myThreadPool = new MyThreadPool();
         for (int i = 0;i < 1000;i ++) {
             myThreadPool.execute(new Runner("这是消息：" + i));
         }
