@@ -5,7 +5,7 @@ package com.bibabo.algorithm.leetcode.No1TwoNumSum;
  * @Date: 2022/7/8 16:35
  * @Description:
  */
-public class TwoNumSumTest {
+public class Test {
 
     public static void main(String[] args) {
         int[] nums = {2, 7, 11, 15};

@@ -5,7 +5,7 @@ package com.bibabo.algorithm.leetcode.No217ExistDuplicateElements;
  * @Date: 2022/7/7 11:00
  * @Description:
  */
-public class ExistDuplicateElementsTest {
+public class Test {
 
     public static void main(String[] args) {
         // int[] nums = {1,2,3,4,5};

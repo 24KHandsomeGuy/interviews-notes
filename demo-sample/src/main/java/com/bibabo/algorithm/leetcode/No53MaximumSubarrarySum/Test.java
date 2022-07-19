@@ -5,7 +5,7 @@ package com.bibabo.algorithm.leetcode.No53MaximumSubarrarySum;
  * @Date: 2022/7/7 16:36
  * @Description:
  */
-public class MaximumSubarraySumTest {
+public class Test {
 
     public static void main(String[] args) {
         int[] nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
