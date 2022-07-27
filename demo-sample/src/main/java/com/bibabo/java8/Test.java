@@ -2,7 +2,9 @@ package com.bibabo.java8;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author fukuixiang
@@ -19,5 +21,10 @@ public class Test {
         list.add(1);list.add(3);list.add(4);list.add(5);list.add(9);
         Object[] rst = list.stream().map(t -> "t" + t).toArray();//.collect(Collectors.toSet());
         System.out.println(rst.length);
+
+        Set<String> set = new HashSet<>();
+        set.add("1");
+        set.add("2");
+        System.out.println(set);
     }
 }
