@@ -1,0 +1,40 @@
+@startuml
+actor 主站用户
+participant "front-system" as front
+participant "oms-order-ws#receiveOrder" as receiveOrder
+participant "oms-order-flow#InitProcessor" as initProcessor
+participant "oms-order-flow#ExceptionCheckProcessor" as exceptionCheckProcessor
+database "Mysql" as mysql
+
+autonumber
+主站用户-> front: 创建订单
+activate front
+front-> receiveOrder
+activate receiveOrder
+receiveOrder--> mysql: 其中，保存订单履约处理异步表oms_order_flow
+receiveOrder-> front
+deactivate receiveOrder
+front-> 主站用户: 返回创建订单结果
+deactivate front
+
+autonumber
+activate initProcessor
+initProcessor--> mysql: 抓取履约处理异步表oms_order_flow处理
+initProcessor-> initProcessor:等待订单支付成功
+alt 支付超时自动取消
+initProcessor-> initProcessor:结束flow
+else 支付成功
+initProcessor-> initProcessor: 推送微信公众号支付成功消息
+initProcessor-> initProcessor: 推送小程序支付成功消息
+initProcessor-> initProcessor: 推送线下店充值订单返券绑会员
+initProcessor-> initProcessor: 填充商品售卖数oms_sku_sales_qty
+initProcessor-> initProcessor: 保利订单需要填充自动开电子发票
+end
+initProcessor-> exceptionCheckProcessor: 订单信息异常检查
+deactivate initProcessor
+activate exceptionCheckProcessor
+exceptionCheckProcessor-> exceptionCheckProcessor:地址检查
+exceptionCheckProcessor-> exceptionCheckProcessor:金额检查（非第三方平台销售订单）
+exceptionCheckProcessor->
+deactivate exceptionCheckProcessor
+@enduml

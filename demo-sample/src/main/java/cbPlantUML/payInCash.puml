@@ -1,0 +1,132 @@
+@startuml
+title 用户提交订单成功后 现金部分支付扣减
+
+actor ClientUser as user
+participant "FrontSystem前端js/php" as front
+participant "pay-trade-api对TradeGateway的扩展，余额充值接口、支付渠道列表等10.254.65.113,10.254.65.114" as payTradeApi
+participant "TradeGateway提供内部各种现金、非现金交易流水创建，查询，更新，退款等接口10.254.8.168,10.254.65.80" as tradeGateway
+participant "ClearingGateway与支付平台对接10.254.65.111,10.254.65.112" as clearingGateway
+participant "PayCenter收银台，支付系统入口，支付请求，结果回告10.254.65.111,10.254.65.112" as payCenter
+participant "第三方支付平台收银台（支付宝、微信...）" as thirdPayCashier
+
+database "paycoredb支付核心库" as paycoredb
+database "payinterdb支付接口库" as payinterdb
+database "accountdb账户信息库" as accountdb
+database "paylogdb支付日志库" as paylogdb
+database "payeventdb支付事件库" as payeventdb
+database "payconfigdb支付配置库" as payconfigdb
+
+participant "TradeResultDealService现金支付流水结果处理10.254.8.166" as tradeResultDealService
+participant "TradeResultNotifyService通知订单系统订单已支付10.254.8.166,10.254.65.84" as tradeResultNotifyService
+participant "订单系统" as OMS
+participant "DailyReceiveSyncService现金和非现金支付流水同步到财务系统10.254.8.166" as dailyReceiveSyncService
+participant "FinancialAPI财务系统相关接口10.254.8.168,10.254.65.80" as financialAPI
+
+database "financialcoredb财务核心库" as financialcoredb
+database "financiallogdb财务日志库" as financiallogdb
+database "RocketMQ" as rocketMq
+
+participant "FinReceiveRefundDailyService对同步到到财务系统收款和退款的数据写入日收日退报表10.254.8.166" as finReceiveRefundDailyService
+
+
+activate user
+activate front
+activate payTradeApi
+activate tradeGateway
+user-> front
+alt 6.3版本及以上
+front-> payTradeApi: 获取支付渠道列表8102/paychannel/list/get/new  service:trade.paychannel.list.get.new
+else 6.2版本及以下
+front-> payTradeApi: 获取支付渠道列表8102/paychannel/list/get service:trade.paychannel.list.get
+end
+payTradeApi-> front: 返回支付渠道列表
+front-> user: 返回支付渠道列表到用户
+deactivate payTradeApi
+user-> front: 用户通过收银台选择具体支付渠道
+front-> tradeGateway: 选择具体支付渠道 trade.pay.simple.m
+tradeGateway-> tradeGateway: 校验是否重复支付，校验OMS是否已经取消
+tradeGateway--> payinterdb: insert payinterdb.pay_trade_flow_sale 插入交易流水表
+tradeGateway--> payinterdb: insert payinterdb.pay_trade_flow_item_sale 插入交易流水明细表（订单维度）
+tradeGateway--> payinterdb: insert payinterdb.pay_channel_flow_sale 插入支付渠道流水表
+tradeGateway--> paylogdb: insert paylogdb.pay_operate_log 插入创建无线支付交易流水日志记录
+tradeGateway-> front: 返回内部交易流水创建结果
+activate clearingGateway
+front-> clearingGateway: 通过春播的收银台获取支付请求链接 clearing.normal.channel.pay.url.get 创建支付请求的url（如支付宝）
+clearingGateway-> clearingGateway: select payconfigdb.pay_channel_gateway_config 查询到三方支付的目标地址gateway_url
+clearingGateway-> clearingGateway: select payconfigdb.pay_channel_gateway_config 查询到春播的支付回调地址notify_url
+clearingGateway-> front: 返回创建支付请求链接
+activate thirdPayCashier
+activate payCenter
+front-> thirdPayCashier: 跳转到第三方支付收银台
+thirdPayCashier-> payCenter: PayResultReceiveController（如支付宝：alipayPayResultNotify.html）
+payCenter-> clearingGateway: 验证支付结果clearing.normal.channel.pay.notify.verify
+clearingGateway-> thirdPayCashier: 询问第三方支付平台支付结果
+thirdPayCashier-> clearingGateway: 返回支付结果
+deactivate thirdPayCashier
+clearingGateway-> payCenter: 返回支付结果
+deactivate clearingGateway
+
+
+alt 支付失败
+payCenter-> front: 根据支付结果渲染相应页面
+else 支付成功
+payCenter-> tradeGateway: 生成支付结果通知流水trade.pay.channel.notify.create
+tradeGateway-> tradeGateway: 创建支付结果通知流水
+tradeGateway--> payinterdb: insert pay_channel_notify_flow_sale创建支付结果通知流水
+tradeGateway--> paylogdb: insert pay_operate_log创建支付操作日志记录
+alt 存在三方支付渠道的优惠折扣信息。添加相应折扣记录
+    alt alipay
+        tradeGateway--> payinterdb: INSERT channel_notify_discount_alipay
+    else icbc
+        tradeGateway--> payinterdb: INSERT channel_notify_discount_icbc
+    else wxcoupon
+        tradeGateway--> payinterdb: INSERT channel_notify_discount_wxcoupon
+    else normal
+        tradeGateway--> payinterdb: INSERT channel_notify_discount_normal
+    end
+end
+tradeGateway-> payCenter: 返回创建支付通知流水结果
+payCenter-> front: 根据支付结果渲染相应页面
+end
+deactivate payCenter
+front-> user: 用户支付流程结束
+deactivate tradeGateway
+deactivate front
+deactivate user
+
+activate tradeResultDealService
+tradeResultDealService-> tradeResultDealService: 定时任务抓取pay_channel_notify_flow_sale现金支付渠道流水通知表TradeResultDealServiceImpl
+tradeResultDealService--> payinterdb: update pay_channel_flow_sale set status = 1 支付渠道流水表状态为1
+tradeResultDealService--> payinterdb: update pay_trade_flow_sale set status = 1 修改交易流水状态为1
+tradeResultDealService--> payinterdb: update pay_trade_flow_item_sale set status = 1 修改交易流水明细表状态为1
+tradeResultDealService--> payeventdb: insert payeventdb.pay_trade_notify_sale_handle value (source_id = pay_trade_flow_sale.trade_id)通知oms
+tradeResultDealService--> payinterdb: insert payinterdb.pay_receive_sync_handle 同步处理事件表
+tradeResultDealService--> payinterdb: insert payinterdb.pay_actual_receive_sale 实收事件表
+deactivate tradeResultDealService
+
+activate tradeResultNotifyService
+tradeResultNotifyService-> tradeResultNotifyService: 定时任务抓取pay_trade_notify_sale_handle
+tradeResultNotifyService-> OMS: orderPayService#addOrderPay 通知OMS已支付
+deactivate tradeResultNotifyService
+
+activate dailyReceiveSyncService
+activate financialAPI
+dailyReceiveSyncService-> dailyReceiveSyncService: 定时任务现金处理CashActualReceiveSyncService（待升级为高可用elasticjob）
+dailyReceiveSyncService--> payeventdb: select pay_receive_sync_handle读取未处理的结果同步处理事件表
+dailyReceiveSyncService--> paycoredb: select pay_actual_receive_sale读取实收记录
+dailyReceiveSyncService--> paylogdb: insert paylogdb.pay_operate_log 插入支付操作日志表
+dailyReceiveSyncService-> financialAPI: financial.actual.receive.sale.create通知财务实收金额
+
+financialAPI--> financialcoredb: INSERT financial_actual_receive_sale 插入财务实收流水记录
+financialAPI--> financiallogdb: INSERT financial_operate_log 插入财务操作日志记录
+financialAPI--> rocketMq: FIN_RECEIVE_DAILY 相当于一条event记录，支持所有moneyType
+deactivate financialAPI
+deactivate dailyReceiveSyncService
+
+activate finReceiveRefundDailyService
+financialAPI--> rocketMq: FIN_RECEIVE_DAILY 消费这个财务实收流水消息
+finReceiveRefundDailyService-->financialcoredb: financial_actual_receive_sale 根据mq的id抓取财务实收流水记录详情
+finReceiveRefundDailyService-> finReceiveRefundDailyService: 根据实收创建实收/实退统计表记录
+finReceiveRefundDailyService--> financialcoredb: INSERT fin_receive_refund_sale trade_type=1实收 插入销售订单支付实收/实退统计表记录
+deactivate finReceiveRefundDailyService
+@enduml

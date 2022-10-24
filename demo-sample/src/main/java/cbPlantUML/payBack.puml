@@ -1,0 +1,101 @@
+@startuml
+title 用户提交订单成功后 非现金部分支付扣减
+participant "CS-system" as csSystem
+actor ClientUser as user
+participant "FrontSystem前端php" as front
+participant "TradeGateway提供内部各种现金、非现金交易流水创建，查询，更新，退款等接口10.254.8.168,10.254.65.80" as gateway
+
+database "paycoredb支付核心库" as paycoredb
+database "payinterdb支付接口库" as payinterdb
+database "accountdb账户信息库" as accountdb
+database "paylogdb支付日志库" as paylogdb
+database "payeventdb支付事件库" as payeventdb
+database "payconfigdb支付配置库" as payconfigdb
+
+participant "pay-no-cash-deduct-job非现金扣减处理服务，余额调整处理服务10.254.8.166" as payNoCashDeductJob
+participant "DailyReceiveSyncService现金和非现金支付流水同步到财务系统10.254.8.166" as dailyReceiveSyncService
+participant "FinancialAPI财务系统相关接口10.254.8.168,10.254.65.80" as financialAPI
+
+database "financialcoredb财务核心库" as financialcoredb
+database "financiallogdb财务日志库" as financiallogdb
+database "RocketMQ" as rocketMq
+
+participant "FinReceiveRefundDailyService对同步到到财务系统收款和退款的数据写入日收日退报表10.254.8.166" as finReceiveRefundDailyService
+
+activate user
+activate front
+activate gateway
+user-> front
+alt moneyType=2 余额扣减
+front-> gateway: trade.balance.deduct (ps:存在multi，批量扣减接口)
+gateway--> payinterdb: insert pay_no_cash_deduct_flow_sale 插入非现金扣减流水
+gateway--> accountdb: update accountdb.acct_buyer_account set balance - deduct 扣减账户余额
+gateway--> paylogdb: insert paylogdb.pay_operate_log 插入支付操作日志表
+gateway--> payeventdb: insert payeventdb.pay_email_sms_handle 插入发送短信处理记录
+else moneyType=3 春播卡扣减
+front-> gateway: trade.giftcard.deduct 用户使用普通礼品卡（臻食卡）时调用 (ps:存在multi，批量扣减接口)
+gateway--> payinterdb: insert pay_no_cash_deduct_flow_sale 插入非现金扣减流水
+gateway--> accountdb: update accountdb.gift_card set remain_value - deduct_amount 扣减礼品卡
+gateway--> paylogdb: insert paylogdb.pay_operate_log 插入支付操作日志表
+gateway--> payeventdb: insert payeventdb.pay_email_sms_handle 插入发送短信处理记录
+else moneyType=4 优惠劵扣减
+front-> gateway: trade.coupon.deduct 不实际扣减礼券，只记录流水，用于在退款时进行数据校验查询(ps:在前端扣除的礼劵)
+gateway--> payinterdb: insert pay_no_cash_deduct_flow_sale 插入非现金扣减流水
+gateway--> paylogdb: insert paylogdb.pay_operate_log 插入支付操作日志表
+else moneyType=5 积分扣减
+front-> gateway: trade.point.deduct 不实际扣减积分，只记录流水，用于在退款时进行数据校验查询(ps:在前端扣除的积分)
+gateway--> payinterdb: insert pay_no_cash_deduct_flow_sale 插入非现金扣减流水
+gateway--> paylogdb: insert paylogdb.pay_operate_log 插入支付操作日志表
+else moneyType=6 商品卡扣减
+front-> gateway: trade.point.deduct(批量接口) 用户使用商品卡（悦食卡）兑换商品时调用 accountdb.gift_card.card_type in (2,3)
+gateway--> payinterdb: insert pay_no_cash_deduct_flow_sale 插入非现金扣减流水
+gateway--> accountdb: update accountdb.gift_card set remain_value - deduct_amount 扣减礼品卡
+gateway--> paylogdb: insert paylogdb.pay_operate_log 插入支付操作日志表
+gateway--> payeventdb: insert payeventdb.pay_email_sms_handle 插入发送短信处理记录
+else 客服系统调用余额调整
+csSystem-> gateway: trade.balance.update 支持财务后台账户余额调增/减功能调用
+gateway--> payinterdb: insert payinterdb.pay_no_cash_adjust_flow 插入支付非现金调整流水
+gateway--> accountdb: update accountdb.acct_buyer_account set balance 扣减或增加账户余额
+gateway--> paylogdb: insert paylogdb.pay_operate_log 插入支付操作日志表
+end
+gateway-> front: 非现金扣减结束，返回处理结果
+front-> user: 告知用户
+deactivate gateway
+deactivate front
+deactivate user
+
+activate payNoCashDeductJob
+payNoCashDeductJob-> payNoCashDeductJob: 定时任务非现金扣减处理服务，余额调整处理服务（待升级为高可用elasticjob）
+alt 抓取pay_no_cash_deduct_flow_sale非现金扣减流水处理 moneyType in (2、3、4、5、6)
+payNoCashDeductJob--> accountdb: insert accountdb.acct_change_log 插入一条用户账户变更记录
+payNoCashDeductJob--> paycoredb: insert paycoredb.pay_actual_receive_sale (销售订单支付实收表)插入一条支付实收记录
+payNoCashDeductJob--> payeventdb: insert payeventdb.pay_receive_sync_handle (销售订单支付结果同步处理事件表)插入一条新纪录
+payNoCashDeductJob--> payinterdb: UPDATE payinterdb.pay_no_cash_deduct_flow_sale SET trade_status=1 修改非现金处理流水记录状态为完成
+payNoCashDeductJob--> paylogdb: insert paylogdb.pay_operate_log 插入实收操作日志
+else 抓取pay_no_cash_adjust_flow非现金调整流水处理（目前只有余额）（不需要写入pay_actual_receive_sale实收表，也就是不需要通知财务）
+payNoCashDeductJob--> accountdb: insert accountdb.acct_change_log 插入一条用户账户变更记录
+payNoCashDeductJob--> payinterdb: UPDATE payinterdb.pay_no_cash_adjust_flow SET adjust_status=1 修改非现金调整流水处理记录状态为完成
+end
+deactivate payNoCashDeductJob
+
+activate dailyReceiveSyncService
+activate financialAPI
+dailyReceiveSyncService-> dailyReceiveSyncService: 定时任务非现金处理（待升级为高可用elasticjob）
+dailyReceiveSyncService--> payeventdb: select pay_receive_sync_handle读取未处理的结果同步处理事件表
+dailyReceiveSyncService--> paycoredb: select pay_actual_receive_sale读取实收记录
+dailyReceiveSyncService--> paylogdb: insert paylogdb.pay_operate_log 插入支付操作日志表
+dailyReceiveSyncService-> financialAPI: financial.actual.receive.sale.create通知财务实收金额
+
+financialAPI--> financialcoredb: INSERT financial_actual_receive_sale 插入财务实收流水记录
+financialAPI--> financiallogdb: INSERT financial_operate_log 插入财务操作日志记录
+financialAPI--> rocketMq: FIN_RECEIVE_DAILY 相当于一条event记录，支持所有moneyType
+deactivate financialAPI
+deactivate dailyReceiveSyncService
+
+activate finReceiveRefundDailyService
+financialAPI--> rocketMq: FIN_RECEIVE_DAILY 消费这个财务实收流水消息
+finReceiveRefundDailyService-->financialcoredb: financial_actual_receive_sale 根据mq的id抓取财务实收流水记录详情
+finReceiveRefundDailyService-> finReceiveRefundDailyService: 根据实收创建实收/实退统计表记录
+finReceiveRefundDailyService--> financialcoredb: INSERT fin_receive_refund_sale trade_type=1实收 插入销售订单支付实收/实退统计表记录
+deactivate finReceiveRefundDailyService
+@enduml
