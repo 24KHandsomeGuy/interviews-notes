@@ -35,7 +35,7 @@ public class ConsistentHashLoadBalance implements LoadBalance<String, String> {
     }
 
     // 哈希方法：用于计算一个IP的哈希值
-    public int getHashCode(String IP) {
+    private int getHashCode(String IP) {
         final int p = 1904390101;
         int hash = (int) 1901102097L;
         for (int i = 0; i < IP.length(); i++)
@@ -58,12 +58,7 @@ public class ConsistentHashLoadBalance implements LoadBalance<String, String> {
         int clientIpHashCode = getHashCode(ip);
         SortedMap<Integer, String> sortedMap = hashRing.tailMap(clientIpHashCode);
         // 得到该树的第一个元素，也就是最小的元素
-        Integer treeNodeKey;
-        // 如果没有大于该元素的子树了，则取整棵树的第一个元素，相当于取哈希环中的最小元素
-        if (sortedMap == null)
-            treeNodeKey = hashRing.firstKey();
-        else
-            treeNodeKey = sortedMap.firstKey();
+        Integer treeNodeKey = sortedMap.firstKey();
         return hashRing.get(treeNodeKey);
     }
 }
