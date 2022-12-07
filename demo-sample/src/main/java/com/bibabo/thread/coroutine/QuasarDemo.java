@@ -21,6 +21,7 @@ public class QuasarDemo {
         new Fiber(() -> {
             for (int i = 0; i < 10; i++) {
                 naturals.send(i);
+                System.out.println(Thread.currentThread().getName() + ",send1:" + i);
             }
             naturals.close();
         }).start();
@@ -30,6 +31,7 @@ public class QuasarDemo {
             Integer v;
             while ((v = naturals.receive()) != null) {
                 squares.send(v * v);
+                System.out.println(Thread.currentThread().getName() + ",send2:" + v * v);
             }
             squares.close();
         }).start();
@@ -41,7 +43,7 @@ public class QuasarDemo {
     private static void printer(Channel<Integer> in) throws SuspendExecution, InterruptedException {
         Integer v;
         while ((v = in.receive()) != null) {
-            System.out.println(v);
+            System.out.println(Thread.currentThread().getName() + ",receive3:" + v);
         }
     }
 }
