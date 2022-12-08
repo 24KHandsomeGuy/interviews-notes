@@ -44,7 +44,7 @@ public class PriorityTest {
             }
             while (notEnd) {
                 Thread.yield();
-                jobCount ++;
+                jobCount++;
             }
         }
 
