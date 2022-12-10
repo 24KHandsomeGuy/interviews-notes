@@ -1,6 +1,6 @@
 package com.bibabo.GOF23.commandcomposite;
 
-import GOF23.command.CommandWaiter;
+import com.bibabo.GOF23.command.CommandWaiter;
 
 import java.util.ArrayList;
 import java.util.List;

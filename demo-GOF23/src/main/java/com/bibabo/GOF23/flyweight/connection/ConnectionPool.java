@@ -1,14 +1,14 @@
 package com.bibabo.GOF23.flyweight.connection;
 
-import GOF23.bridgeAdapter.Connection;
-import GOF23.bridgeAdapter.Driver;
-import GOF23.bridgeAdapter.MysqlConnection;
-import GOF23.bridgeAdapter.MysqlConnection2;
-import GOF23.bridgeAdapter.MysqlDriver;
-import GOF23.bridgeAdapter.OracleConnection;
-import GOF23.bridgeAdapter.OracleDriver;
-import GOF23.bridgeAdapter.PostgreSqlConnection;
-import GOF23.bridgeAdapter.PostgresqlAdapterDriver;
+import com.bibabo.GOF23.bridgeAdapter.Connection;
+import com.bibabo.GOF23.bridgeAdapter.Driver;
+import com.bibabo.GOF23.bridgeAdapter.MysqlConnection;
+import com.bibabo.GOF23.bridgeAdapter.MysqlConnection2;
+import com.bibabo.GOF23.bridgeAdapter.MysqlDriver;
+import com.bibabo.GOF23.bridgeAdapter.OracleConnection;
+import com.bibabo.GOF23.bridgeAdapter.OracleDriver;
+import com.bibabo.GOF23.bridgeAdapter.PostgreSqlConnection;
+import com.bibabo.GOF23.bridgeAdapter.PostgresqlAdapterDriver;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

@@ -1,6 +1,6 @@
 package com.bibabo.GOF23.commandcomposite;
 
-import GOF23.command.Breakfast;
+import com.bibabo.GOF23.command.Breakfast;
 
 /**
  * @author fukuixiang

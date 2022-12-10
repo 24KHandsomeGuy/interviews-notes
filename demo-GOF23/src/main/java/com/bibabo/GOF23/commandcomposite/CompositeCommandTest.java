@@ -1,8 +1,8 @@
 package com.bibabo.GOF23.commandcomposite;
 
-import GOF23.command.Bread;
-import GOF23.command.CommandWaiter;
-import GOF23.command.Dumplings;
+import com.bibabo.GOF23.command.Bread;
+import com.bibabo.GOF23.command.CommandWaiter;
+import com.bibabo.GOF23.command.Dumplings;
 
 /**
  * @author fukuixiang

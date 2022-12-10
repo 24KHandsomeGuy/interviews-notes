@@ -1,6 +1,6 @@
 package com.bibabo.GOF23.command;
 
-import GOF23.commandcomposite.CompositeBreakFast;
+import com.bibabo.GOF23.commandcomposite.CompositeBreakFast;
 
 /**
  * @author fukuixiang

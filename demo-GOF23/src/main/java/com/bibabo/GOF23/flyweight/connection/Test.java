@@ -1,8 +1,7 @@
 package com.bibabo.GOF23.flyweight.connection;
 
-import GOF23.bridgeAdapter.Connection;
+import com.bibabo.GOF23.bridgeAdapter.Connection;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -17,7 +16,7 @@ public class Test {
 
     public static void main(String[] args) throws InterruptedException {
 
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(100, 100, 3000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(100, 100, 3000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
         for (int i = 0;i < 30;i ++) {
             executor.execute(new ConnectionTestThread());
         }

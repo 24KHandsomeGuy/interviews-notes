@@ -1,7 +1,7 @@
 package com.bibabo.GOF23.flyweight.connection;
 
-import GOF23.bridgeAdapter.Connection;
-import GOF23.bridgeAdapter.Driver;
+import com.bibabo.GOF23.bridgeAdapter.Connection;
+import com.bibabo.GOF23.bridgeAdapter.Driver;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
