@@ -1,4 +1,4 @@
-package com.bibabo.collections.queue.nonblockingqueue;
+package com.bibabo.collections.queue;
 
 import java.util.Deque;
 import java.util.LinkedList;

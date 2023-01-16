@@ -9,8 +9,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author fukuixiang
  * @date 2021/3/15
  * @time 11:14
- * @description
+ * @description 是有问题的 if (blockingQueue.peek() == null) { 换成 while (blockingQueue.peek() == null) {
  */
+@Deprecated
 public class MyBlockingQueue<E> {
 
     Queue<E> blockingQueue = new LinkedList<>();

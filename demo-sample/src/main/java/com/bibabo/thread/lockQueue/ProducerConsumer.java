@@ -6,8 +6,9 @@ import java.util.concurrent.TimeUnit;
  * @author fukuixiang
  * @date 2021/3/15
  * @time 11:13
- * @description
+ * @description 是有问题的
  */
+@Deprecated
 public class ProducerConsumer {
 
     static volatile boolean stopFlag = false;

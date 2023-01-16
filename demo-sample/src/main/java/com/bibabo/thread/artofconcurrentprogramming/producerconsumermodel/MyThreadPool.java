@@ -35,9 +35,7 @@ public class MyThreadPool {
     }
 
     public void shutdown() {
-        workerList.forEach(w -> {
-            w.interrupt();
-        });
+        workerList.forEach(w -> w.interrupt());
     }
 
     private static class Worker<T extends Runnable> implements Runnable {
