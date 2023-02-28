@@ -38,7 +38,17 @@ Spring不仅管理自己创建的对象，而且保存对象与对象间的关�
 
 构造注入、set方法注入、直接为属性赋值
 
-
+##Spring版本
+###1.x
+XML配置
+###2.5x
+提供@Component、@Service、@Controller、@Repository等注解
+###3.x
+提供了@Configuration注解
+去XML化配置
+###4.x
+提供了@Conditional注解
+条件配置
 
 ## 注解
 

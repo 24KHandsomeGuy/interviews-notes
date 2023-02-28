@@ -28,5 +28,6 @@ public class SoftReferenceDemo {
         System.out.println("Now heap is full, after system gc, the array`s memory address is:" + arraySr.get());
         System.out.println("The Soft reference object`s memory address is:" + objectSr);
         System.out.println("The be associated with soft reference object`s memory address is:" + objectSr.get());
+        System.out.println(null == objectSr.get());
     }
 }
