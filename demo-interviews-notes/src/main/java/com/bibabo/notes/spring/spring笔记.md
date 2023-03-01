@@ -39,16 +39,20 @@ Spring不仅管理自己创建的对象，而且保存对象与对象间的关�
 构造注入、set方法注入、直接为属性赋值
 
 ##Spring版本
+Spring为了让Bean加载变得更加的简单
 ###1.x
 XML配置
 ###2.5x
 提供@Component、@Service、@Controller、@Repository等注解
 ###3.x
-提供了@Configuration注解
+提供了@Configuration、@Enable、@Import、@ComponentScan、@ImportSelector注解
 去XML化配置
 ###4.x
 提供了@Conditional注解
 条件配置
+###5.x
+@Indexed 
+
 
 ## 注解
 
@@ -201,3 +205,5 @@ jar包外部的application.properties或application.yml(不带spring.profile)配
 jar包内部的application.properties或application.yml(不带spring.profile)配置文件
 @Configuration注解类上的@PropertySource
 ```
+###自动装配
+完成Bean的自动装载
