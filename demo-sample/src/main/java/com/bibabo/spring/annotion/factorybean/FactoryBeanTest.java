@@ -19,7 +19,8 @@ public class FactoryBeanTest {
         System.out.println(Arrays.toString(beanNames).replaceAll(",", "\n"));
 
         // 拿到的是Robot，不是factoryBean
-        System.out.println(applicationContext.getBean("robot").getClass());
+        System.out.println(applicationContext.getBean("robot").hashCode());
+        System.out.println(applicationContext.getBean("robot").hashCode());
 
         // 加& 可以拿到他的factoryBean
         /**

@@ -15,6 +15,7 @@ public class StringIntern {
         String aa = "a";
 
         System.out.println(a == aa);
+        System.out.println(a.intern() == aa);
         System.out.println(a.intern() == aa.intern());
 
 

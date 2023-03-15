@@ -1,5 +1,3 @@
-
-
 # VMWare
 
 官网https://www.vmware.com/cn.html
@@ -106,7 +104,44 @@ yum clean all && yum makecache
 
 yum -y install lrzsz
 
+#### 同步yum
 
+yum install rsync -y 
+
+虚拟机或云服务器ECS（Elastic Compute Service）弹性计算服务IaaS（Infrastructure as a Service）
+
+#### 安装zip unzip
+
+```bash
+yum install zip
+yum install unzip
+```
+
+查看tcp端口
+
+```bash
+netstat -ntlp
+```
+
+安装wget
+
+```bash
+yum -y install wget
+```
+
+wget https 地址后需要跟--no-check-certificate
+
+shell远程同步
+
+```text
+rsync -av /data/zipkin/ 82.156.216.254:/data/zipkin
+```
+
+#CentOS异常情况总结
+###1.阿里云镜像yum失效
+"Could not resolve host: mirrors.cloud.aliyuncs.com; Unknown error"
+已经安装了wget 但还是报错，一般是原来的wget初始化有文件损坏造成的。
+yum remove wget卸载掉重新安装
 
 # 软件安装与启动
 
@@ -119,6 +154,12 @@ yum -y install lrzsz
 1.先到官网下载到本地，再通过Xftp传输到linux上/soft目录下（需要root用户）
 
 下载地址：https://dev.mysql.com/downloads/mysql/5.7.html#downloads
+
+Linux -Generic
+
+Linux -Generic(glibc 2.12)(x86, 64bit)
+
+**Compressed TAR Archive**
 
 2.到soft目录下解压（soft目录目的是为了统一存放软件安装包）root用户解压
 
@@ -152,7 +193,7 @@ chown mysql:mysql -R /data/mysql   #赋予权限
 vim /etc/my.cnf
 ```
 
- 内容如下
+内容如下
 
 ```shell
 [mysqld]
@@ -264,23 +305,63 @@ systemctl disable firewalld
 
 chkconfig iptables off
 
+14.密码及登录
+
+密码123456
+
+登录mysql   ./mysql -u root -p   *#bin目录下*
+
 ## Java
 
 1.查看yum库中都有哪些jdk版本
 
-```shell
+```bash
 yum search java|grep jdk
 ```
 
 2.安装1.8
 
-```
+```bash
 yum install java-1.8.0-openjdk
 ```
 
-3.进入安装目录
+3.查找安装路径
+
+```bash
+which java
+ls -lrt /usr/bin/java
+```
+
+4.安装jdk运行环境
 
 ```
+javac
+-bash: javac: command not found
+```
+
+错误原因：默认安装完只有运行环境，java安装目录下只有jre文件夹
+
+安装开发环境
+
+```bash
+yum install java-1.8.0-openjdk-devel.x86_64
+```
+
+安装后
+
+```bash
+ls -lrt /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.322.b06-1.el7_9.x86_64/
+```
+
+再次输入javac说明安装成功
+
+```bash
+javac
+```
+
+5.进入安装目录
+
+```bash
 cd /usr/lib/jvm
 ```
 
@@ -288,7 +369,7 @@ cd /usr/lib/jvm
 
 java-1.8.0-openjdk-1.8.0.292.b10-0.el8_3.x86_64
 
-4.设置环境变量
+6.设置环境变量
 
 ```
 vim /etc/profile
@@ -305,6 +386,7 @@ export JAVA_HOME JRE_HOME CLASS_PATH PATH
 
 ```shell
 source /etc/profile
+echo $JAVA_HOME
 ```
 
 ```shell
@@ -313,29 +395,110 @@ java -version
 
 ![1619451015083](D:\AboutIT\笔记\1619451015083.png)
 
-
-
-
-
 ## RocketMQ
 
-```
-cd /usr/local/rocketmq/rocketmq-all-4.4.0/distribution/target/apache-rocketmq/bin
+1.安装Rocket
+
+java相关的软件都可以到官网上有详细指导安装，这里我们说下可能出现的问题
+
+2.启动nameserver
+
+```bash
+nohup sh bin/mqnamesrv &
+tail -f ~/logs/rocketmqlogs/namesrv.log
 ```
 
-```
-nohup sh mqnamesrv &
+3.启动broker
+
+```bash
+nohup sh bin/mqbroker -n localhost:9876 &
+tail -f ~/logs/rocketmqlogs/broker.log 
 ```
 
-```
-nohup sh mqbroker -n localhost:9876 &
+4.内存不足导致无法启动
+
+shell脚本mqnamesrv中无jvm内存配置，但发现最后一行
+
+```shell
+sh ${ROCKETMQ_HOME}/bin/runserver.sh org.apache.rocketmq.namesrv.NamesrvStartup $@
 ```
 
-## Seata
+最终会运行runserver.sh。修改jvm配置
+
+```shell
+JAVA_OPT="${JAVA_OPT} -server -Xms128m -Xmx128m -Xmn64m -XX:MetaspaceSize=8m -XX:MaxMetaspaceSize=16m"
+```
+
+broker也同样
 
 ```
-cd /data/seata/bin
+sh ${ROCKETMQ_HOME}/bin/runbroker.sh org.apache.rocketmq.broker.BrokerStartup $@
 ```
+
+最终会运行runserver.sh。修改jvm配置
+
+```shell
+JAVA_OPT="${JAVA_OPT} -server -Xms128m -Xmx128m -Xmn64m"
+```
+
+tools.sh也修改下
+
+5.阿里云ECS服务器，nameserver返回的broker地址为私网地址无法供外部访问
+
+```bash
+vim broker.conf
+```
+
+```properties
+namesrvAddr=172.17.24.252:9876 // 私网ip
+brokerIP1=39.107.156.177 // broker外网ip
+```
+
+启动broker指定配置文件
+
+```bash
+nohup sh mqbroker -n localhost:9876  autoCreateTopicEnable=true -c ../conf/broker.conf &
+```
+
+6.安装可视化控制台
+
+github搜rocketmq-externals项目
+
+https://github.com/apache/rocketmq-dashboard
+
+下载master代码
+
+```bash
+https://github.com/apache/rocketmq-dashboard/archive/refs/heads/master.zip
+```
+
+更改镜像
+
+```xml
+<mirrors>
+    <mirror>
+          <id>alimaven</id>
+          <name>aliyun maven</name>
+          <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+          <mirrorOf>central</mirrorOf>        
+    </mirror>
+</mirrors>
+```
+
+启动控制台
+
+```bash
+mvn spring-boot:run
+```
+
+或者
+
+```bash
+mvn clean package -Dmaven.test.skip=true
+nohup java -jar -Xms128m -Xmx128m  target/rocketmq-dashboard-1.0.1-SNAPSHOT.jar &
+```
+
+[http://39.107.156.177:8090](http://39.107.156.177:8090/)
 
 ## Zookeeper
 
@@ -388,13 +551,41 @@ source /etc/profile
 nohup sh zkServer.sh start  >zookeeper.out &
 ```
 
+**调优JVM**
+
+zkServer.sh脚本
+
+```shell
+if [ -e "$ZOOBIN/../libexec/zkEnv.sh" ]; then
+  . "$ZOOBINDIR"/../libexec/zkEnv.sh
+else
+  . "$ZOOBINDIR"/zkEnv.sh
+fi
+```
+
+zkEnv.sh脚本
+
+```shell
+if [ -f "$ZOOCFGDIR/java.env" ]
+then
+    . "$ZOOCFGDIR/java.env"
+fi
+```
+
+conf/java.env
+
+```
+# heap size MUST be modified according to cluster environment
+export JVMFLAGS="-Xms256m -Xmx256m -Xmn42m $JVMFLAGS"
+```
+
 ### zookeeper迁移
 
-#### 判断连接数
+1.判断连接数
 
 netstat -an | grep 33| awk -F ':' '{print $8}'|sort -n |uniq -c|sort -nr
 
-#### zookeeper迁移
+2.zookeeper迁移
 
 1. 复制zookeeper server目录到新机器： 目的(zoo.cfg配置同原始机器)
 
@@ -417,38 +608,55 @@ netstat -an | grep 33| awk -F ':' '{print $8}'|sort -n |uniq -c|sort -nr
 
 ## Maven
 
-```
-yum -y install wget         常规的安装wget的操作命令
+1.到maven官网下载页面
+
+<https://maven.apache.org/download.cgi>
+
+复制下载链接linux下载
+
+https://dlcdn.apache.org/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz
+https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+
+注意要换成http
+
+```bash
+wget http://dlcdn.apache.org/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz
 ```
 
-```
-wget https://mirrors.bfsu.edu.cn/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+2.解压缩
+
+```bash
+tar -zxvf apache-maven-3.8.5-bin.tar.gz
 ```
 
-```
-tar -zxvf apache-maven-3.6.3-bin.tar.gz
-```
+3.配置环境变量
 
-```
-mv apache-maven-3.6.3 /data/
-```
-
-```shell
+```bash
 vim /etc/profile
 ```
 
 ```properties
-export MAVEN_HOME=/data/apache-maven-3.6.3
-export MAVEN_HOME
-export PATH=$PATH:$MAVEN_HOME/bin
+###set maven environment
+export MAVEN_HOME=/data/apache-maven-3.8.5
+export PATH=$MAVEN_HOME/bin:$PATH 
 ```
 
-```shell
+刷新环境变量
+
+```bash
 source /etc/profile
 ```
 
+4.检查版本
+
+```bash
+mvn -v
 ```
-mvn -version
+
+
+
+```
+yum -y install wget         常规的安装wget的操作命令
 ```
 
 ![1619451694973](D:\AboutIT\笔记\1619451694973.png)
@@ -473,6 +681,15 @@ mv nacos /data/
 cd /data/nacos/bin
 ```
 
+修改jvm参数大小
+
+```
+vim startup.sh
+由于我们是单机，只修改单机模式即可
+if [[ "${MODE}" == "standalone" ]]; then
+    JAVA_OPT="${JAVA_OPT} -Xms256m -Xmx256m -Xmn42m"
+```
+
 ```
 启动命令(standalone代表着单机模式运行，非集群模式):
 sh startup.sh -m standalone
@@ -484,22 +701,157 @@ ps -ef | grep nacos
 
 ```
 控制台地址
-http://192.168.16.112:8848/nacos/
+http://82.156.216.254:8848/nacos/
 ```
 
 账号：nacos
 
 密码：nacos
 
-## Redis
+## Sentinel Dashboard
 
-安装到这个目录下 /usr/local/redis/
+1.github上有控制台安装教程
 
-http://redis.io
+[https://github.com/alibaba/Sentinel/wiki/%E6%8E%A7%E5%88%B6%E5%8F%B0](https://github.com/alibaba/Sentinel/wiki/控制台)
+
+2.下载jar
+
+```bash
+wget https://github.com/alibaba/Sentinel/releases/download/1.8.4/sentinel-dashboard-1.8.4.jar
+```
+
+sentinel控制台直接通过jar包启动，每次都需要配置端口和jvm参数，打成shell脚本启动
+
+```bash
+touch start.sh
+```
 
 ```shell
-wget http://download.redis.io/releases/redis-5.0.7.tar.gz
-#会很慢，我本地下载然后扔到虚拟机上
+r_exit ()
+{
+    echo "ERROR: $1 !!"
+    exit 1
+}
+
+[ ! -e "$JAVA_HOME/bin/java" ] && JAVA_HOME=$HOME/jdk/java
+[ ! -e "$JAVA_HOME/bin/java" ] && JAVA_HOME=/usr/java
+[ ! -e "$JAVA_HOME/bin/java" ] && error_exit "Please set the JAVA_HOME variable in your environment, We need java(x64)!"
+
+export JAVA_HOME
+export JAVA="$JAVA_HOME/bin/java"
+
+JAVA_SERVER_OPT="${JAVA_SERVER_OPT} -Dserver.port=9090 -Dcsp.sentinel.dashboard.server=localhost:9090 -Dproject.name=sentinel-dashboard"
+JAVA_OPT="${JAVA_OPT} -server -Xms128m -Xmx128m -Xmn43M -Xss512k -XX:PermSize64m -XX:MaxPermSize64m"
+JAVA_OPT="${JAVA_OPT} -XX:+UseConcMarkSweepGC -XX:+UseCMSCompactAtFullCollection -XX:CMSInitiatingOccupancyFraction=70 -XX:+CMSParallelRemarkEnabled -XX:SoftRefLRUPolicyMSPerMB=0 -XX:+CMSClassUnloadingEnabled -XX:SurvivorRatio=8  -XX:-UseParNewGC"
+JAVA_OPT="${JAVA_OPT} -XX:+PrintGCDateStamps -XX:+PrintGCDetails -Xloggc:/data/sentinel-dashboard-1.8.4/gclogs/sentinel-dashboard-gc.log"
+JAVA_OPT="${JAVA_OPT} -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data/sentinel-dashboard-1.8.4/javadump/sentinel-dashboard-1.8.4-jvmdump.hprof"
+
+nohup $JAVA $JAVA_SERVER_OPT -jar /data/sentinel-dashboard-1.8.4/sentinel-dashboard-1.8.4.jar ${JAVA_OPT} &
+tail -f nohup.out
+```
+
+```bash
+touch shutdown.sh
+```
+
+```shell
+#过滤掉grep进程，找到第二个，也就是pid
+PID=$(ps -ef | grep sentinel | grep -v grep | awk '{ print $2 }')
+if [ -z "$PID" ]
+then
+    echo Application is already stopped
+else
+    echo kill $PID
+    kill $PID
+    echo stop $PID successfully
+fi
+```
+
+端口9090 sentinel sentinel
+
+账号密码：sentinel  sentinel
+
+## Redis
+
+1.gcc
+
+由于 redis 是用 C 语言开发，安装之前必先确认是否安装 gcc 环境（gcc -v），如果没有安装，执行以下命令进行安装
+
+```bash
+yum install -y gcc
+```
+
+2.到官网复制安装包下载链接
+
+```bash
+wget https://download.redis.io/releases/redis-5.0.14.tar.gz
+```
+
+解压缩
+
+```bash
+tar -zxvf redis-5.0.14.tar.gz
+```
+
+3.cd切换到redis解压目录下，执行编译
+
+```bash
+make
+```
+
+redis6.x会报错，找不到包，需要将gcc升级为5.3以上
+
+```bash
+gcc -v
+4.8.5-44
+```
+
+此处我把redis降为5.x
+
+4.安装并指定安装目录
+
+```bash
+make install PREFIX=/usr/local/redis
+```
+
+5.启动
+
+前台启动
+
+```bash
+cd /usr/local/redis/bin/
+./redis-server
+```
+
+守护进程后台启动
+
+```
+cp /usr/local/redis/redis.conf /usr/local/redis/bin/
+```
+
+修改 redis.conf 文件，把 daemonize no 改为 daemonize yes
+
+修改comment掉 bind 127.0.0.1，否则除本机无法通信
+
+6.启用aof事务写入
+
+设置aof持久化：appendonly修改为yes
+
+7.启动密码
+
+设置连接密码：去掉*#requirepass 后面的字符串则为密码*
+
+redis-cli登录
+
+```redis
+auth 123456
+```
+
+8.通过Sentinel 找到master地址
+
+```redis
+redis-cli -h  redis.uat.chunbo.com -p  26381
+SENTINEL get-master-addr-by-name
 ```
 
 **如果出现下面错误**
@@ -656,6 +1008,7 @@ linux系统下的c编程与windows有所不同，如果你在用gcc编译代码�
 for(int i=0; i<len; i++) {
 }
 ```
+
 下面这种写法在vc里是没有错的，而在gcc就会提示错误，要求遵守c89标准，c89标准是不支持上述写法的，必须先定义i变量：
 
 ```c
@@ -674,21 +1027,449 @@ deps/bloom/bloom.c:24:25: fatal error: murmurhash2.h: No such file or directory
 #include "murmurhash2.h"
 ```
 
+## Seata
+
+1.下载Seata-Server
+
+```bash
+wget https://github.com/seata/seata/releases/download/v1.3.0/seata-server-1.3.0.tar.gz --no-check-certificate
+```
+
+2.调整shell脚本的JVM启动参数
+
+找到bin目录下的seata-server.sh，修改JVM启动参数，调小内存分配
+
+```shell
+$JAVA_OPTS -server -Xmx256m -Xms256m -Xmn128m -Xss512k -XX:SurvivorRatio=10 -XX:MetaspaceSize=32m -XX:MaxMetaspaceSize=64m -XX:MaxDirectMemorySize=64m
+```
+
+### Server配置
+
+1.初始化Seata所需表
+
+https://github.com/seata/seata/blob/develop/script/server/db/mysql.sql
+
+2.修改server端的配置文件
+
+通过registry.conf寻找配置中心、注册中心
+
+默认使用本地磁盘file.conf
+
+更改配置中心、注册中心为nacos
+
+```conf
+registry {
+  type = "nacos"
+  nacos {
+    application = "seata-server"
+    serverAddr = "127.0.0.1:8848"
+    group = "BIBABO_SEATA_GROUP"
+    namespace = ""
+    cluster = "default"
+    username = "nacos"
+    password = "nacos"
+  }
+}
+
+config {
+  type = "nacos"
+  nacos {
+    serverAddr = "127.0.0.1:8848"
+    namespace = ""
+    group = "BIBABO_SEATA_GROUP"
+    username = "nacos"
+    password = "nacos"
+  }
+}
+```
+
+3.把Seata客户端服务端所需配置通过脚本注册到nacos上
+
+在server的服务器seata目录下操作
+
+https://github.com/seata/seata/blob/develop/script/config-center/config.txt
+
+https://github.com/seata/seata/blob/develop/script/config-center/nacos/nacos-config.sh
+
+将config.txt放到seata目录下，将nacos-config.sh放到seata/bin目录下
+
+执行注册配置脚本
+
+```shell
+sh nacos-config.sh -h 127.0.0.1 -p 8848 -g BIBABO_SEATA_GROUP -u nacos -w nacos
+```
+
+4.修改服务端所需配置
+
+4.1.把server端所需存储放到mysql上
+
+建库bibabo_seata
+
+建表https://github.com/seata/seata/blob/develop/script/server/db/mysql.sql
+
+4.2.到nacos修改store相关配置
+
+修改store.mode=db;
+
+修改store.db.url、username、password...
+
+5.启动Seata-Server
+
+```bash
+nohup ./seata-server.sh > seata.log 2>&1 &
+```
+
+默认端口8091
+
+### Client配置
+
+AT模式下所需的undo_log表
+
+https://github.com/seata/seata/blob/develop/script/client/at/db/mysql.sql
+
+下为使用注册中心查找seata-server地址，不需要配置service.bibabo.grouplist
+
+```yaml
+###seata
+seata:
+  registry:
+    type: nacos
+    nacos:
+      cluster: default
+      server-addr: 114.116.44.130:8848
+      group: BIBABO_SEATA_GROUP
+      username: nacos
+      password: nacos
+      application: seata-server
+```
+
+## Canal
+
+### MySQL配置
+
+#### 开启binlog
+
+进入mysql查看是否启动binlog
+
+```sql
+SHOW VARIABLES LIKE '%log_bin%';
+```
+
+| Variable_name | Value |
+| :------------ | ----- |
+| log_bin       | OFF   |
+
+OFF说明目前是关闭状态的，需要修改mysql配置文件启动log_bin
+
+linux在/etc/my.cnf
+
+```cnf
+[mysqld]
+log-bin=mysql-bin # 开启 binlog
+binlog-format=ROW # 选择 ROW 模式
+server_id=1 # 配置 MySQL replaction 需要定义，不要和 canal 的 slaveId 重复
+```
+
+重启mysql service mysql restart
+
+#### 创建canal账号
+
+登录mysql   ./mysql -u root -p   *#bin目录下*
+
+授权 canal 链接 MySQL 账号具有作为 MySQL slave 的权限, 如果已有账户可直接 grant
+
+```sql
+CREATE USER canal IDENTIFIED BY 'canal';  
+GRANT SELECT, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'canal'@'%';
+-- GRANT ALL PRIVILEGES ON *.* TO 'canal'@'%' ;
+FLUSH PRIVILEGES;
+```
+
+### 安装canal
+
+- 下载 canal, 访问 [release 页面](https://github.com/alibaba/canal/releases) , 选择需要的包下载, 如以 1.1.4 版本为例
+
+  ```bash
+  wget https://github.com/alibaba/canal/releases/download/canal-1.1.4/canal.deployer-1.1.4.tar.gz
+  ```
+
+- 解压缩
+
+  ```
+  mkdir /data/canal-1.1.4
+  tar -zxvf canal.deployer-1.1.4.tar.gz  -C /data/canal-1.1.4
+  ```
+
+  - 解压完成后，进入 /data/canal 目录，可以看到如下结构
+
+    ```
+    drwxr-xr-x 2 jianghang jianghang  136 2013-02-05 21:51 bin
+    drwxr-xr-x 4 jianghang jianghang  160 2013-02-05 21:51 conf
+    drwxr-xr-x 2 jianghang jianghang 1.3K 2013-02-05 21:51 lib
+    drwxr-xr-x 2 jianghang jianghang   48 2013-02-05 21:29 logs
+    ```
+
+- 配置修改
+
+  ```
+  vi conf/example/instance.properties
+  ```
+
+  ```
+  ## mysql serverId
+  canal.instance.mysql.slaveId = 1234
+  #position info，需要改成自己的数据库信息
+  canal.instance.master.address = 127.0.0.1:3306 
+  canal.instance.master.journal.name = 
+  canal.instance.master.position = 
+  canal.instance.master.timestamp = 
+  #canal.instance.standby.address = 
+  #canal.instance.standby.journal.name =
+  #canal.instance.standby.position = 
+  #canal.instance.standby.timestamp = 
+  #username/password，需要改成自己的数据库信息
+  canal.instance.dbUsername = canal  
+  canal.instance.dbPassword = canal
+  canal.instance.defaultDatabaseName =
+  canal.instance.connectionCharset = UTF-8
+  #table regex
+  canal.instance.filter.regex = .\*\\\\..\*
+  ```
+
+  - canal.instance.connectionCharset 代表数据库的编码方式对应到 java 中的编码类型，比如 UTF-8，GBK , ISO-8859-1
+  - 如果系统是1个 cpu，需要将 canal.instance.parser.parallel 设置为 false (conf/canal.properties)
+
+- 启动
+
+  ```
+  sh bin/startup.sh
+  
+  ```
+
+- 查看 server 日志
+
+  ```
+  vi logs/canal/canal.log</pre>
+  ```
+
+  ```
+  2013-02-05 22:45:27.967 [main] INFO  com.alibaba.otter.canal.deployer.CanalLauncher - ## start the canal server.
+  2013-02-05 22:45:28.113 [main] INFO  com.alibaba.otter.canal.deployer.CanalController - ## start the canal server[10.1.29.120:11111]
+  2013-02-05 22:45:28.210 [main] INFO  com.alibaba.otter.canal.deployer.CanalLauncher - ## the canal server is running now ......
+  ```
+
+- 查看 instance 的日志
+
+  ```
+  vi logs/example/example.log
+  ```
+
+  ```
+  2013-02-05 22:50:45.636 [main] INFO  c.a.o.c.i.spring.support.PropertyPlaceholderConfigurer - Loading properties file from class path resource [canal.properties]
+  2013-02-05 22:50:45.641 [main] INFO  c.a.o.c.i.spring.support.PropertyPlaceholderConfigurer - Loading properties file from class path resource [example/instance.properties]
+  2013-02-05 22:50:45.803 [main] INFO  c.a.otter.canal.instance.spring.CanalInstanceWithSpring - start CannalInstance for 1-example 
+  2013-02-05 22:50:45.810 [main] INFO  c.a.otter.canal.instance.spring.CanalInstanceWithSpring - start successful....
+  ```
+
+  **一开始启动不了，报各种CPU 内存的错误，怀疑内存不足造成的，修改startup.sh脚本**
+
+- 关闭
+
+  ```
+  sh bin/stop.sh
+  ```
+
+### 客户端使用
+
+```xml
+<dependency>
+    <groupId>com.alibaba.otter</groupId>
+    <artifactId>canal.client</artifactId>
+    <version>1.1.4</version>
+</dependency>
+```
+
+或者采用Github上的第三方客户端
+
+```xml
+<dependency>
+    <groupId>com.xpand</groupId>
+    <artifactId>starter-canal</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
+
+## Elasticsearch
+
+安装前需要root权限初始化一下内核参数和系统配置：
+
+```bash
+if [ `ulimit -n` -lt 65535 ];then ulimit -n 65535;echo -e "* soft nofile 65535\n* hard nofile 65535" >>/etc/security/limits.conf;fi
+echo 'vm.max_map_count=262144' >> /etc/sysctl.conf
+sysctl -p
+```
+
+1.单机部署
+
+下载LINUX X86_64格式的安装包，解压即可用了。
+
+```bash
+tar -zxf elasticsearch-7.2.1-linux-x86_64.tar.gz
+useradd es
+chown -R es:es elasticsearch-7.2.1*
+#切换到es用户，es需要使用非root用户才能启动
+su es
+cd elasticsearch-7.2.1
+bin/elasticsearch-certutil ca
+bin/elasticsearch-certutil cert --ca elastic-stack-ca.p12
+mv elastic-* config/
+```
+
+编辑elasticsearch.yml
+
+> 注意network.host参数，如果es只允许本机访问，则不需要配置；如果需要其他主机访问则配置为当前主机ip。
+
+```bash
+#vim config/elasticsearch.yml
+network.host: 192.168.0.12
+discovery.type: single-node
+
+xpack.security.enabled: true
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: certificate
+xpack.security.transport.ssl.keystore.path: elastic-certificates.p12
+xpack.security.transport.ssl.truststore.path: elastic-certificates.p12
+```
+
+创建keystore
+
+```undefined
+bin/elasticsearch-keystore create
+```
+
+启动es:
+
+```bash
+#deaminzie启动
+bin/elasticsearch  -d
+#前台启动
+bin/elasticsearch
+
+#推荐第一次使用前台启动，便于发现问题，如果前台启动直接报错:Killed 无其它日志，则应该是你服务器内存不足了，es默认堆栈为1g，在config/jvm.properties  ## -Xms4g  -Xmx4g 调整一下即可。
+```
+
+接下来给es设置密码：
+
+```bash
+#手动或自动设置密码，二选一
+bin/elasticsearch-setup-passwords interactive
+
+bin/elasticsearch-setup-passwords auto
+```
+
+测试es是否正常工作：
+
+```cpp
+curl http://elastic:your_password@your_ip:9200
+```
+
+**所有ES相关操作需要使用es用户，先配置密码，再修改config/elasticsearch.yml#network.host:0.0.0.0**
+
+## Kibana
+
+*和Es放到同一台机器就无法使用，而且会把Es直接搞挂掉，很奇怪*
+
+1.解压
+
+```bash
+tar -zxf kibana-7.2.1-linux-x86_64.tar.gz
+useradd es
+chown -R es:es kibana-7.2.1*
+#切换到es用户，kibana需要使用非root用户才能启动
+su es
+```
+
+2.配置
+
+vim config/kibana.yml
+
+```yaml
+server.port: 5601
+server.host: "0.0.0.0" ##对外暴露ip，因为云服务器，0.0.0.0会自动暴露公网ip
+elasticsearch.hosts: ["http://39.107.156.177:9200"] ## Es地址
+kibana.index: ".kibana" ## index Kibana在Es上的索引
+elasticsearch.username: "elastic"
+elasticsearch.password: "123456"
+```
+
+vim /bin/kibana 修改nodejs的堆内存大小为200M
+
+```shell
+NODE_OPTIONS="$NODE_OPTIONS --max-old-space-size=200" 
+NODE_ENV=production BROWSERSLIST_IGNORE_OLD_DATA=true exec "${NODE}" --no-warnings --max-http-header-size=65536 $NODE_OPTIONS "${DIR}/src/cli" ${@}
+```
+
+3.启动
+
+```bash
+nohup ./kibana &
+```
+
+4.访问
+
+http://114.116.44.130:5601
+账号访问Kibana: elastic  123456
+
+#Zipkin
+链路追踪
+下载jar包
+
+```bash
+wget https://search.maven.org/remote_content?g=io.zipkin&a=zipkin-server&v=LATEST&c=exec
+nohup java -jar -Xms128m -Xmx128m -Xmn43M -XX:PermSize=16m -XX:MaxPermSize=32m zipkin-server-2.23.16-exec.jar &
+```
+
+使用ES做持久化存储
+
+```bash
+java -jar -Xms64m -Xmx64m -Xmn32M zipkin-server-2.23.16-exec.jar --STORAGE_TYPE=elasticsearch --ES_HOSTS=localhost:9200 --ES_USERNAME=elastic --ES_PASSWORD=123456  -java.tmp.dir=/data/zipkin/temp >/dev/null >zipkin.log 2>&1 & echo $! > pidfile.txt
+```
+
+http://39.107.156.177:9411
+
+## Tidb
+
+## Hadoop
+
+```text
+1B=8bit
+1KB=1024B
+1MB=1024KB
+1GB=1024MB
+1TB=1024GB
+1PB=1024TB
+1EB=1024PB
+1ZB=1024EB
+1YB=1024ZB
+```
+
+## Hive
+
+## Hbase
+
+## Spark
+
+## Git
+
+密钥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
+
+  
 
 
-## SpringBoot
-
-nohup java -jar -Dserver.port=8088 gupao-demo-springboot-thread-0.0.1-SNAPSHOT.jar >all.log &
 
 ## Docker
 
-### 背景
-
-最近接手了几个项目，发现项目的部署基本上都是基于Docker的，幸亏在几年前已经熟悉的Docker的基本使用，没有抓瞎。这两年随着云原生的发展，Docker在云原生中的作用使得它也蓬勃发展起来。
-
-今天这篇文章就带大家一起实现一下在Linux操作系统下Docker的部署过程，收藏起来，以备不时之需。当然，如果对Docker感兴趣的话，可以直接根据本文的步骤操作起来。终有一天你会享受到Docker的便利与魅力的。
-
-### Docker及系统版本
+1.Docker及系统版本
 
 Docker从17.03版本之后分为CE（Community Edition: 社区版）和EE（Enterprise Edition: 企业版）。相对于社区版本，企业版本强调安全性，但需付费使用。这里我们使用社区版本即可。
 
@@ -731,7 +1512,7 @@ CentOS Linux release 7.6.1810 (Core)
 
 可以看到，当前Linux内核版本满足Docker的需要。
 
-### Docker的自动化安装
+2.Docker的自动化安装
 
 Docker官方和国内daocloud都提供了一键安装的脚本，使得Docker的安装更加便捷。
 
@@ -749,7 +1530,7 @@ curl -sSL https://get.daocloud.io/docker | sh
 
 执行上述任一条命令，耐心等待即可完成Docker的安装。
 
-### Docker手动安装
+3.Docker手动安装
 
 手动安装Docker分三步：卸载、设置仓库、安装。
 
@@ -769,9 +1550,10 @@ yum remove docker \
                   docker-engine-selinux \
                   docker-engine \
                   docker-ce
+
 ```
 
-#### 设置源仓库
+3.1.设置源仓库
 
 **第二步，设置仓库**。新主机上首次安装Docker Engine-Community之前，需要设置Docker仓库。此后可从仓库安装和更新Docker。
 
@@ -781,6 +1563,7 @@ yum remove docker \
 $ sudo yum install -y yum-utils \
   device-mapper-persistent-data \
   lvm2
+
 ```
 
 执行上述命令，安装完毕即可进行仓库的设置。使用官方源地址设置命令如下：
@@ -789,6 +1572,7 @@ $ sudo yum install -y yum-utils \
 $ sudo yum-config-manager \
     --add-repo \
     https://download.docker.com/linux/centos/docker-ce.repo
+
 ```
 
 通常，官方的源地址比较慢，可将上述的源地址替换为国内比较快的地址：
@@ -798,12 +1582,13 @@ $ sudo yum-config-manager \
 
 仓库设置完毕，即可进行Docker的安装。
 
-#### Docker安装
+3.2.Docker安装
 
 执行一下命令，安装最新版本的 Docker Engine-Community 和 containerd。
 
 ```
 sudo yum install -y docker-ce docker-ce-cli containerd.io
+
 ```
 
 docker-ce为社区免费版本。稍等片刻，docker即可安装成功。但安装完成之后的默认是未启动的，需要进行启动操作。
@@ -812,16 +1597,18 @@ docker-ce为社区免费版本。稍等片刻，docker即可安装成功。但�
 
 ```
 yum install -y docker-ce
+
 ```
 
 至此，完成Docker安装。
 
-#### Docker启动
+3.3.Docker启动
 
 启动Docker的命令：
 
 ```
 sudo systemctl start docker
+
 ```
 
 通过运行hello-world镜像来验证是否正确安装了Docker Engine-Community。
@@ -831,6 +1618,7 @@ sudo systemctl start docker
 sudo docker pull hello-world
 // 执行hello-world
 sudo docker run hello-world
+
 ```
 
 如果执行之后，控制台显示如下信息，则说明Docker安装和启动成功：
@@ -841,6 +1629,7 @@ sudo docker run hello-world
 Hello from Docker!
 This message shows that your installation appears to be working correctly.
 ……
+
 ```
 
 除了启动Docker，一些其他启动相关的命令：
@@ -849,7 +1638,7 @@ This message shows that your installation appears to be working correctly.
 - 重启Docker服务：systemctl restart docker / service docker restart
 - 关闭Docker服务：docker service docker stop / docker systemctl stop docker
 
-#### 删除Docker
+3.4.删除Docker
 
 删除安装包：
 
@@ -863,7 +1652,7 @@ yum remove docker-ce
 rm -rf /var/lib/docker
 ```
 
-### Docker其他常见命令
+4.Docker其他常见命令
 
 安装完成Docker之后，这里汇总列一下常见的Docker操作命令：
 
@@ -882,686 +1671,68 @@ rm -rf /var/lib/docker
 
 更多的命令可以通过`docker help`命令来查看。
 
-### 小结
+5.小结
 
 本篇文章带大家从头到尾在Linux操作系统上安装了Docker，以及介绍了如何启动、验证及常见的命令。后面如果有机会话，再大家了解一下如何制作Docker镜像，用于CI/CD发布当中。
 
+## SpringBoot使用脚本启动、关闭
 
+### linux上创建脚本：touch start.sh、touch stop.sh
 
+chmod 777 整个项目文件夹
 
+1.编写启动脚本vim start.sh
 
+可以本地编写好复制，参考nacos的启动脚本
 
+```shell
+r_exit ()
+{
+    echo "ERROR: $1 !!"
+    exit 1
+}
 
+[ ! -e "$JAVA_HOME/bin/java" ] && JAVA_HOME=$HOME/jdk/java
+[ ! -e "$JAVA_HOME/bin/java" ] && JAVA_HOME=/usr/java
+[ ! -e "$JAVA_HOME/bin/java" ] && error_exit "Please set the JAVA_HOME variable in your environment, We need java(x64)!"
 
+export JAVA_HOME
+export JAVA="$JAVA_HOME/bin/java"
 
+JAVA_OPT="${JAVA_OPT} -server -Xms128m -Xmx128m -Xmn43M -Xss512k -XX:PermSize64m -XX:MaxPermSize64m"
+JAVA_OPT="${JAVA_OPT} -XX:+UseConcMarkSweepGC -XX:+UseCMSCompactAtFullCollection -XX:CMSInitiatingOccupancyFraction=70 -XX:+CMSParallelRemarkEnabled -XX:SoftRefLRUPolicyMSPerMB=0 -XX:+CMSClassUnloadingEnabled -XX:SurvivorRatio=8  -XX:-UseParNewGC"
+JAVA_OPT="${JAVA_OPT} -XX:+PrintGCDateStamps -XX:+PrintGCDetails -Xloggc:/data/bibabo-sms/gclogs/bibabo-sms-gc.log"
+JAVA_OPT="${JAVA_OPT} -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data/bibabo-sms/javadump/bibabo-sms-jvmdump.hprof"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Java排查问题命令
-
-启动死锁或cpu飙高的springboot项目
-
-nohup java -jar -Dserver.port=8088 gupao-demo-springboot-thread-0.0.1-SNAPSHOT.jar >all.log &
-
-top命令排查
-
-jps 或 ps -efaux | grep java找到pid
-
-## 1.线程排查死锁
-
-http://192.168.1.8:8088/dead 模拟死锁
-
-jstack pid
-
-![1646535395010](D:\AboutIT\笔记\1646535395010.png)
-
-## 2.cpu飙高
-
-http://192.168.1.8:8088/loop 模拟cpu飙高
-
-![1646535603745](D:\AboutIT\笔记\1646535603745.png)
-
-找到pid，定位飙高的线程
-
-top -H -p 32790
-
-![1646535699982](D:\AboutIT\笔记\1646535699982.png)
-
-32811为飙高线程，转换为16进制
-
-printf "0x%x\n" 32811
-
-0x802b
-
- jstack 32790| grep -A 30 0x802b
-
-![1646535974833](D:\AboutIT\笔记\1646535974833.png)
-
-## 3.dubbo服务无法访问
-
-检查暴露的rest协议端口
-
-netstat -anp | grep 8080
-
-端口是开启的，并且可以Ping通
-
-查看catalina.out日志发现leak memory导致开启容器时失败
-
-调配JVM参数，缩减服务器所占内存。重启就可以了
-
-## 4.vmstat
-
-**vmstat命令是最常见的Linux/Unix监控工具,属于sysstat包**
-
-procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu-----
- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
- 0  0   3172 150880 152876 1652272    0    0     0     0  577  934  0  0 100  0  0	
- 0  0   3172 150880 152876 1652272    0    0     0     0  510  899  0  0 100  0  0	
- 0  0   3172 150880 152876 1652272    0    0     0    44  591  963  0  0 100  0  0	
- 0  0   3172 150740 152876 1652272    0    0     0     0 2598 2669  1  0 98  0  0	
- 0  0   3172 150204 152876 1652296    0    0     0   120 2916 2889  2  0 98  0  0	
- 0  0   3172 149940 152876 1652300    0    0     0     0 3148 3073  1  0 98  0  0	
- 0  0   3172 150120 152876 1652308    0    0     0     0 4121 3293  3  1 96  0  0	
- 0  0   3172 150060 152876 1652312    0    0     0    56 3276 3133  2  1 98  0  0	
- 0  0   3172 149768 152876 1652316    0    0     0     0 3223 3093  2  0 98  0  0	
- 0  0   3172 149440 152876 1652316    0    0     0    16 3163 3141  1  1 98  0  0	
- 0  0   3172 149424 152876 1652344    0    0     0     0 3005 3312  2  1 98  0  0	
- 0  0   3172 149572 152876 1652364    0    0     0     0 3054 3203  2  0 98  0  0	
- 0  0   3172 149568 152876 1652368    0    0     0    24 3366 3534  2  1 98  0  0	
- 0  0   3172 149816 152876 1652480    0    0     0     0 1444 1921  1  0 99  0  0	
-
-![1669969123657](D:\AboutIT\笔记\1669969123657.png)
-
-vmstat是Virtual Meomory Statistics（虚拟内存统计）的缩写，可对操作系统的虚拟内存、进程、IO读写、CPU活动等进行监视。它是对系统的整体情况进行统计，不足之处是无法对某个进程进行深入分析。
-
-### 输出字段意义：
-
-#### procs
-
-##### r
-
-The number of processes waiting for run time.
-
-等待运行的进程数。如果等待运行的进程数越多，意味着CPU非常繁忙。另外，如果该参数长期大于和等于逻辑cpu个数，则CPU资源可能存在较大的瓶颈。
-
-##### b
-
-The number of processes in uninterruptible sleep. 
-
-处在非中断睡眠状态的进程数。意味着进程被阻塞。主要是指被资源阻塞的进程对列数（比如IO资源、页面调度等），当这个值较大时，需要根据应用程序来进行分析，比如数据库产品，中间件应用等。
-
-#### Memory
-
-##### swpd
-
-the amount of virtual memory used.
-
- 已使用的虚拟内存大小。如果虚拟内存使用较多，可能系统的物理内存比较吃紧，需要采取合适的方式来减少物理内存的使用。swapd不为0，并不意味物理内存吃紧，如果swapd没变化，si、so的值长期为0,这也是没有问题的     
-
-##### free
-
-the amount of idle memory.
-
-空闲的物理内存的大小
-
-##### buff
-
-the amount of memory used as buffers.
-
-用来做buffer（缓存，主要用于块设备缓存）的内存数，单位：KB
-
-##### cache
-
-the amount of memory used as cache.
-
-用来做cache（缓存，主要用于缓存文件）的内存，单位：KB
-
-##### inact
-
-the amount of inactive memory. (-a option)
-
-inactive memory的总量
-
-##### active
-
-the amount of active memory. (-a option)
-
-active memroy的总量
-
-si: Amount of memory swapped in from disk (/s).
-
-#### swap
-
-##### si
-
-Amount of memory swapped in from disk (/s).
-
-从磁盘交换到**swap**虚拟内存的交换页数量，单位：KB/秒。如果这个值大于**0**，表示物理内存不够用或者内存泄露了  
-
-##### so
-
-Amount of memory swapped to disk (/s).
-
-从**swap**虚拟内存交换到磁盘的交换页数量，单位：KB/秒，如果这个值大于**0**，表示物理内存不够用或者内存泄露了
-
-**内存够用的时候，这2个值都是0，如果这2个值长期大于0时，系统性能会受到影响，磁盘IO和CPU资源都会被消耗。**
-    当看到空闲内存（free）很少的或接近于0时，就认为内存不够用了，这个是不正确的。不能光看这一点，还要结合si和so，如果free很少，但是si和so也很少（大多时候是0），那么不用担心，系统性能这时不会受到影响的。
-    当内存的需求大于RAM的数量，服务器启动了虚拟内存机制，通过虚拟内存，可以将RAM段移到SWAP DISK的特殊磁盘段上，这样会 出现虚拟内存的页导出和页导入现象，页导出并不能说明RAM瓶颈，虚拟内存系统经常会对内存段进行页导出，但页导入操作就表明了服务器需要更多的内存了， 页导入需要从SWAP DISK上将内存段复制回RAM，导致服务器速度变慢。
-
-#### IO
-
-##### bi
-
-Blocks received from a block device (blocks/s).
-
-每秒从块设备接收到的块数，单位：块/秒 也就是读块设备。
-
-##### bo
-
-Blocks sent to a block device (blocks/s).
-
-每秒发送到块设备的块数，单位：块/秒  也就是写块设备。
-
-#### system
-
-##### in
-
-The number of interrupts per second, including the clock.
-
-每秒的中断数，包括时钟中断 
-
-##### cs
-
-The number of context switches per second. 
-
-每秒的环境（上下文）切换次数。比如我们调用系统函数，就要进行上下文切换，而过多的上下文切换会浪费较多的cpu资源，这个数值应该越小越好。
-
-#### CPU
-
-These are percentages of total CPU time.
-
-##### us
-
-Time spent running non-kernel code. (user time, including nice time)
-
-用户CPU时间(非内核进程占用时间)（单位为百分比）。 us的值比较高时，说明用户进程消耗的CPU时间多
-
-##### sy
-
-Time spent running kernel code. (system time)
-
-系统使用的CPU时间（单位为百分比）。sy的值高时，说明系统内核消耗的CPU资源多，这并不是良性表现，我们应该检查原因。
-
-##### id
-
-Time spent idle. Prior to Linux 2.5.41, this includes IO-wait time.
-
-空闲的CPU的时间(百分比)，在Linux 2.5.41之前，这部分包含IO等待时间。
-
-##### wa
-
-Time spent waiting for IO. Prior to Linux 2.5.41, shown as zero.
-
-等待IO的CPU时间，在Linux 2.5.41之前，这个值为0 .这个指标意味着CPU在等待硬盘读写操作的时间，用百分比表示。wait越大则机器io性能就越差。说明IO等待比较严重，这可能由于磁盘大量作随机访问造成，也有可能磁盘出现瓶颈（块操作）。
-
-##### st
-
-Time stolen from a virtual machine. Prior to Linux 2.6.11, unknown.
-
-### 使用示例：
-
-1: 查看vmstat命令的帮助信息
-
-man vmstat
-
-2: 显示活动(active)与非活动(inactive)的内存
-
-vmstat -a 2 10
-
-3：不加任何参数，vmstat命令只输出一条记录，这个数据是自系统上次重启之后到现在的平均数值。
-
-vmstat
-
-4：显示各种事件计数器表和内存统计信息，这显示不重复。
-
-vmstat -s
-
-5：可以扩大字段长度，当内存较大时，默认长度不够完全展示内存时，会导致字段值偏移，导致查看不便
-
-vmstat -w 2 5
-
-6:显示磁盘分区数据（disk partition statistics ）
-
-vmstat -p sdc5 2 10
-
-## 5.pidstat
-
-pidstat是sysstat工具的一个命令，用于监控全部或指定进程的cpu、内存、线程、设备IO等系统资源的占用情况。pidstat首次运行时显示自系统启动开始的各项统计信息，之后运行pidstat将显示自上次运行该命令以后的统计信息。用户可以通过指定统计的次数和时间来获得所需的统计信息。
-
-04:48:45 PM       PID    %usr %system  %guest    %CPU   CPU  Command
-04:48:45 PM      1629    0.00    0.00    0.00    0.00     4  crond
-04:48:45 PM      2465    0.01    0.04    0.00    0.05     6  zabbix_agentd
-04:48:45 PM      2466    0.00    0.01    0.00    0.02     2  zabbix_agentd
-04:48:45 PM      2467    0.00    0.01    0.00    0.02     1  zabbix_agentd
-04:48:45 PM      2468    0.00    0.01    0.00    0.02     2  zabbix_agentd
-04:48:45 PM      2469    0.00    0.00    0.00    0.00     3  zabbix_agentd
-04:48:45 PM      5317    0.00    0.00    0.00    0.00     6  java
-04:48:45 PM     18423    0.00    0.00    0.00    0.01     5  java
-04:48:45 PM     19530    0.00    0.00    0.00    0.00     0  pidstat
-04:48:45 PM     33288    0.02    0.01    0.00    0.03     4  java
-
-每隔1秒输出1组数据（需要 Ctrl+C 才结束）
-
-## 6.Linux下环境变量误改错修复
-
-1，在命令行中输入
-export PATH=/usr/bin:/usr/sbin:/bin:/sbin:/usr/X11R6/bin
-这样可以保证命令行命令暂时可以使用。命令执行完之后先不要关闭终端
-或者cd /usr/bin 下执行vi命令
-
-2、恢复bash_profile文件
-vi ~/.bash_profile
-
-3、很有可能是你的PATH 环境变量设置错误，比如 $PATH 漏了
-
-```
-PATH=$PATH:$PATH1
+nohup $JAVA -jar /data/bibabo-sms/bibabo-sms-0.0.1-SNAPSHOT.jar ${JAVA_OPT} &
+tail -f nohup.out
 ```
 
-4、 立即生效，source ~/.bash_profile
-
-# 常用命令
-
-
-
-## echo
-
-rm -rf删除日志文件，但如果服务器不重启，这些空间不会释放掉
-
-使用echo "" > xxx.log 可清空文件并释放空间，然后再rm -rf
-
-也可以使用cat /dev/null > xxx.log
-
-## crond
-
-定时任务的使用场景非常广泛，比如定时发送邮件，定时清理日志等等，在持续集成中，可以定时的触发测试任务，比如希望在每天晚上下班时间执行自动化用例。本文通过介绍Linux cron定时来了解cron定时相关概念。
-
-
-
-目录
-
-- Linux Crontab 定时任务
-  - [crond 服务](https://www.cnblogs.com/hiyong/p/15615536.html#crond-服务)
-  - [crontab相关文件](https://www.cnblogs.com/hiyong/p/15615536.html#crontab相关文件)
-  - [cron表达式](https://www.cnblogs.com/hiyong/p/15615536.html#cron表达式)
-  - [crontab命令](https://www.cnblogs.com/hiyong/p/15615536.html#crontab命令)
-  - [crontab定时示例](https://www.cnblogs.com/hiyong/p/15615536.html#crontab定时示例)
-- Linux anacron 定时任务
-  - [anacron命令](https://www.cnblogs.com/hiyong/p/15615536.html#anacron命令)
-  - [anacron执行过程](https://www.cnblogs.com/hiyong/p/15615536.html#anacron执行过程)
-- cron表达式应用
-  - [Jenkins定时构建](https://www.cnblogs.com/hiyong/p/15615536.html#jenkins定时构建)
-
-
-
-### Linux Crontab 定时任务
-
-cron来源于希腊语chronos，意思是时间。在类Unix的操作系统中，可以使用cron 服务器来实现定时执行任务。crontab文件存放cron指令，执行周期命令的守护进程crond负责激活这些任务，定期检查是否有任务执行。
-
-#### crond 服务
-
-crond 服务是用来执行周期任务或等待处理某些事件的一个守护进程，crontab 命令需要 crond 服务支持。centos7中一般是默认安装的，可以使用 `rpm` 命令查看是否安装：
+启动
 
 ```bash
-$ rpm -qa | grep crontab
-crontabs-1.11-6.20121102git.el7.noarch
+sh start.sh
 ```
 
-查看crond 服务状态：
+startup.log查看是否启动成功
+
+2.编写关闭脚本vim stop.sh
+
+```shell
+#过滤掉grep进程，找到第二个，也就是pid
+PID=$(ps -ef | grep bibabo-sms | grep -v grep | awk '{ print $2 }')
+if [ -z "$PID" ]
+then
+    echo Application is already stopped
+else
+    echo kill $PID
+    kill $PID
+    echo stop $PID successfully
+fi
+```
+
+关闭
 
 ```bash
-# centos7
-systemctl status crond.service 
-
-# centos6
-service crond status
+sh stop.sh
 ```
-
-启动crond 服务：
-
-```bash
-# centos7
-systemctl start  crond.service
-
-# centos6
-service crond start
-```
-
-停止crond 服务：
-
-```bash
-# centos7
-systemctl stop  crond.service
-
-# centos6
-service crond stop
-```
-
-重启crond 服务：
-
-```bash
-# centos7
-systemctl restart  crond.service
-
-# centos6
-service crond restart
-```
-
-重载crond 服务：
-
-```bash
-# centos7
-systemctl reload  crond.service
-
-# centos6
-service crond reload
-```
-
-#### crontab相关文件
-
-cron 服务主要包括以下文件目录：
-
-- `/var/spool/cron`：用户定义的crontab文件存放目录
-- `/etc/cron.d`：存放要执行的crontab文件或脚本
-- `/etc/crontab`：系统任务调度的配置文件
-- `/etc/anacrontab`：anacron配置文件
-- `/etc/cron.deny`：列出不允许使用crontab命令的用户
-- `/etc/cron.daily`：每天执行一次的脚本
-- `/etc/cron.hourly`：每小时执行一次的脚本
-- `/etc/cron.monthly`：每月执行一次的脚本
-- `/etc/cron.weekly`：每星期执行一次的脚本
-
-`/etc/crontab`文件负责管理和维护任务：
-
-```bash
-$ cat /etc/crontab
-SHELL=/bin/bash
-PATH=/sbin:/bin:/usr/sbin:/usr/bin
-MAILTO=root
-
-# For details see man 4 crontabs
-
-# Example of job definition:
-# .---------------- minute (0 - 59)
-# |  .------------- hour (0 - 23)
-# |  |  .---------- day of month (1 - 31)
-# |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
-# |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
-# |  |  |  |  |
-# *  *  *  *  * user-name  command to be executed
-```
-
-其中：
-
-- `SHELL`变量指定系统使用的shell版本
-- `PATH`指定系统执行命令的路径
-- `MAILTO`指定邮件发送的用户，如果为root，邮件会发送到`/var/spool/mail/root`文件中
-
-#### cron表达式
-
-用户定义的crontab文件保存在 `/var/spool/cron` 目录中，每个crontab任务以创建者的名字命名。crontab文件中每一行都代表一项任务，每条命令包括6个字段，前5个代表时间，第6个字段是要执行的命令。
-
-五颗星：`* * * * *`
-
-- 第1颗星：分钟 minute，取值 0~59；
-- 第2颗星：小时 hour，取值 0~23；
-- 第3颗星：天 day，取值 1~31；
-- 第4颗星：月 month，取值 1~12；
-- 第5颗星：星期 week，取值 0~7，0 和 7 都表示星期天。
-
-可以使用4种操作符：
-
-- `*` ：当前代表的所有取值范围内的数字
-- `/`：需要间隔的数字
-- `-`：某个区间，比如1-3表示1, 2, 3
-- `,`：分散的数字，可以不连续，比如1, 3, 5
-
-下面举几个例子：
-
-```sh
-# 每5分钟构建一次
-H/5 * * * *
-
-# 每2小时构建一次
-H H/2 * * *
-
-# 每天8点到22点，每2小时构建一次
-H 8-22/2 * * *
-
-# 每天8点，22点各构建一次
-H 8,22 * * *
-```
-
-#### crontab命令
-
-crontab 命令用来配置定时任务，语法如下：
-
-```bash
-crontab [options] file
-crontab [options]
-```
-
-常用options：
-
-- `-u <user>` ：定义用户
-- `-e`：编辑 crontab表
-- `-l`： 列出用户crontab表
-- `-r`：删除用户crontab表
-- `-i`：删除提示
-- `-n <hostname>` 设置用户crontab主机名
-- `-c`：获取运行用户crontab的主机名
-- `-s`：selinux 上下文
-- `-x <mask>` ：开启调试
-
-#### crontab定时示例
-
-先写一个用于采集CPU性能信息的脚本（cpu_Perf.sh）：
-
-```bash
-#!/bin/bash
-mpstat -P ALL 1 2 >> /var/cron/perf.log
-```
-
-下面来添加一个定时任务：
-
-执行 命令`crontab -e` ，输入下面的cron表达式，每分钟执行一次CPU性能采集脚本：
-
-```bash
-* * * * * /var/cron/cpu_Perf.sh
-```
-
-保存。命令保存到了 `/var/spool/cron/` 目录下的root文件中(当前用户为root)：
-
-```bash
-$ cat /var/spool/cron/root 
-* * * * * /var/cron/cpu_Perf.sh
-$ crontab -l
-* * * * * /var/cron/cpu_Perf.sh
-```
-
-保存成功后，每一分钟就会执行一次脚本。
-
-### Linux anacron 定时任务
-
-如果服务器关机或者无法运行任务，定时任务就不会执行，服务器恢复后，定时任务不会执行没有执行的定时任务。这种场景下可以使用anacron命令，它与crond功能相同，增加了执行被跳过任务的功能。一旦服务器启动，anacron就会检查配置的定时任务是否错过了上一次执行，如果有，将立即运行这个任务，且只运行一次(不管错过了多少个周期)。
-
-也就是说， anacron 是用来保证由于系统原因导致错过的定时任务可以在系统正常后执行的服务。
-
-#### anacron命令
-
-可以使用 anacron 命令来管理 anacron 服务，语法格式如下：
-
-```bash
-anacron [options] [job] ...
-anacron -T [-t anacrontab-file]
-```
-
-options选项：
-
-- `-s`：串行调用任务
-- `-f`：强制执行任务，忽略设置的周期
-- `-n`：没有delay执行任务，隐含调用了`-s`参数
-- `-d`：把信息输出到标准输出设备和系统日志中
-- `-q`：禁止向标准输出发送消息，只能和-d选项配合使用。
-- `-u`：更新时间戳但不执行任务
-- `-V`：打印版本信息
-- `-h`：打印帮助信息
-- `-t <file>` ：使用指定的配置文件，忽略默认的/etc/anacrontab文件。
-- `-T`：Anacrontab测试
-- `-S <dir>`：指定存放timestamp文件的路径
-
-`job` 是 `/etc/anacrontab` 文件中定义的工作名 job-identifier
-
-#### anacron执行过程
-
-下面来介绍一下anacron的执行过程：
-
-1、根据脚本需要执行的频率，将脚本安装到`/etc/cron.[hourly|daily|weekly|monthly]` 目录中：
-
-```bash
-/etc/cron.hourly
-/etc/cron.daily
-/etc/cron.monthly
-/etc/cron.weekly
-```
-
-2、crond 服务会执行`/etc/cron.d/0hourly` 中指定的cron 任务，
-
-```bash
-$ cat /etc/cron.d/0hourly
-# Run the hourly jobs
-SHELL=/bin/bash
-PATH=/sbin:/bin:/usr/sbin:/usr/bin
-MAILTO=root
-01 * * * * root run-parts /etc/cron.hourly
-```
-
-每小时运行一次 **run-parts** 程序，而 **run-parts** 程序执行 `/etc/cron.hourly` 中的所有的shell脚本。
-
-`/etc/cron.hourly` 目录中包含 `0anacron` 脚本：
-
-```bash
-$ ls /etc/cron.hourly
-0anacron  mcelog.cron
-```
-
-3、 `0anacron` 脚本通过 `/etc/anacrontab` 配置文件来运行anacron程序。
-
-```bash
-$ cat /etc/anacrontab
-# /etc/anacrontab: configuration file for anacron
-
-# See anacron(8) and anacrontab(5) for details.
-
-SHELL=/bin/sh
-PATH=/sbin:/bin:/usr/sbin:/usr/bin
-MAILTO=root
-# the maximal random delay added to the base delay of the jobs
-RANDOM_DELAY=45
-# the jobs will be started during the following hours only
-START_HOURS_RANGE=3-22
-
-#period in days   delay in minutes   job-identifier   command
-1       5       cron.daily              nice run-parts /etc/cron.daily
-7       25      cron.weekly             nice run-parts /etc/cron.weekly
-@monthly 45     cron.monthly            nice run-parts /etc/cron.monthly
-```
-
-- `RANDOM_DELAY=45` ：表示最大随机延迟时间为45分钟。
-- `START_HOURS_RANGE=3-22` : 执行的时间范围为03:00—22:00
-
-`/etc/anacrontab` 配置文件执行`cron.[daily|weekly|monthly]` 目录中的可执行文件。
-
-anacron的监测周期为每天、每周和每月，每天执行一次`/etc/cron.daily` 目录中的程序，每周执行一次 `/etc/cron.weekly` 中的程序，每月执行一次 `/etc/cron.monthly` 中的程序。
-
-anacron不能在指定某个时间运行某个程序，它的设计目的是在特定的时间间隔运行某个程序，例如每天，每周日或者每月第一天的03:00运行某个程序。如果因为某种原因（关机或者服务器异常）没有执行，anacron会在服务器正常后运行一次错过的执行。
-
-那么，anacron 是如何判断这些定时任务错过了执行呢？
-
-其实是通过读取上次执行 anacron 的时间记录文件，通过两个时间的差值判断是否超过指定间隔时间（1天、1周和1月）。
-
-`/var/spool/anacron/` 目录中的 `cron.[daily|weekly|monthly]` 文件记录了上一次执行 cron任务 的时间：
-
-```bash
-$ ls /var/spool/anacron/
-cron.daily  cron.monthly  cron.weekly
-$ cat /var/spool/anacron/cron.daily
-20211123
-```
-
-### cron表达式应用
-
-前面介绍了在Linux中通常用 crond 服务来实现任务定时执行，在很多场景都会用到定时任务，比如定时提醒，定时发送邮件等。比如python中可以使用[APScheduler](https://github.com/agronholm/apscheduler)库执行定时任务，Java可以使用Quartz框架实现，Go语言使用 [github.com/robfig/cron](https://github.com/robfig/cron) 包。
-
-在持续测试平台Jenkins中经常会配置定时执行任务，下面简单介绍一下Jenkins定时构建配置方法。
-
-### Jenkins定时构建
-
-在配置Jenkins任务时，构建定时任务主要有两种形式：
-
-- 一种是配置周期触发（Build periodically），在特定时间进行自动触发测试流程。
-- 第二种是Poll SCM：定时检查源码变更，如果有更新就checkout新的代码下来，然后执行构建动作。
-
-在【Build Triggers】中选择 Build periodically 或者 Poll SCM
-
-![](D:\AboutIT\笔记\2229336-20211128161716417-325787681.png)
-
-在Schedule中输入cron表达式来配置定时任务。
-
-Jenkins也可以创建多个定时，比如在每个工作日的9:30和每周五22:30构建：
-
-```sh
-30 9 * * 1-5
-30 22 * * 5
-```
-
-### Linux定时删除日志文件
-
-编写删除文件的shell脚本
-
-crontab -l
-
-- l：显示当前用户所有的定时任务机
-
-- e：使用vim编辑当前用户的定时任务，一行一个定时任务
-
-- r：删除当前用户的定时任务
-
-  使用crontab -e 进入编辑当前用户的定时任务编辑器

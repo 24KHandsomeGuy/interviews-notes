@@ -16,7 +16,8 @@ import java.util.Set;
  * @Description: NIO 多路复用
  * 1.等待连接可以设置为非阻塞的
  * 2.等待IO准备就绪可以设置为非阻塞的
- * 基于事件驱动
+ * 基于事件驱动、观察者设计模式
+ * TODO Selector为监听者，监听事件的发布者，事件发布者有事件发布时 通知监听者
  */
 public class NioServerSocketMultiplex implements Runnable {
 
