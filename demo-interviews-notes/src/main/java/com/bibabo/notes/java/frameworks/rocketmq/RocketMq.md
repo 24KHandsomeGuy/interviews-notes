@@ -262,3 +262,15 @@ public class TransactionListenerImpl implements TransactionListener {
   }
 }
 ```
+
+## 消息丢失解决方案
+1.生产者发送消息到MQ这一过程导致消息丢失
+2.MQ自己发生故障导致消息丢失
+3.消费者拿到消息后，由于操作不当导致消息丢失
+### 生产者的消息丢失解决方案
+事务消息
+### Broker的消息丢失解决方案
+把异步刷盘改为同步刷盘
+### Consumer的消息丢失解决方案
+而RocketMQ的消费者有点不一样，它本身就是需要手动返回消息处理成功的响应的
+将自动提交改为手动提交
