@@ -1,41 +1,56 @@
 # 实战
+
 ## JDK常用工具
+
 ### Jps
+
 使用jps可以查看已启动的应用进程id，后续可以选择对应的进程id进行jvm调优
+
 ### Jmap
+
 #### 查看应用中各实例生成情况
+
 jmap -histo 进程pid > 文件目录及名称
- * num：序号
- * instances：实例数量
- * bytes：占用空间大小
- * class name：类名称，其中：[C is a char[]，[S is a short[]，[I is a int[]，[B is a byte[]，[[I is a int[][]
- 
+
+- num：序号
+- instances：实例数量
+- bytes：占用空间大小
+- class name：类名称，其中：[C is a char[]，[S is a short[]，[I is a int[]，[B is a byte[]，[[I is a int[][]
+
 #### 快速定位内存突然飙升导致的OOM异常
+
 使用jmap -dump:format=b,file=eureka.hprof 14660可以导出这一时刻的堆快照信息(.hprof和.dump都是当前堆内存中的快照信息！)
- 
+
 也可以在jvm参数中设置内存溢出（OOM）时自动导出dump文件，保护事故现场(内存很大的时候，可能会导不出来)，参数设置如下：
- 
+
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:HeapDumpPath=./ （路径）
- 
+
 #### 查看堆内存使用情况
+
 查看命令：jmap -heap 14660
 
 ### Jstack
+
 #### 检测线程死锁
+
 jstack 28212
 
 ### Jinfo
+
 jinfo最主要作用是：查看正在运行的Java应用程序的扩展参数
 jinfo -flags 进程pid
 
 ### Jstat
+
 jstat可以动态的查看堆内存各部分（Eden、s0、s1、老年代、元空间）的使用情况
 jstat -gc pid
 
 ### Jvisualvm
+
 jvisualvm是jdk提供的一个可视化界面，可以看做是对jmap、jstack、jinfo等命令的一个可视化实现，
 使用jvisualvm可以更加直观的查看堆内存信息、检测死锁，GC等情况！
+
 ## 减少上下文切换实战
 
 1.查看每一秒cs上下文切换次数
@@ -182,6 +197,7 @@ Java层面的Lock锁阻塞的状态不是BLOCKED而是WAITING
 jps
 jstack 进程id
 Found one Java-level deadlock:
+
 ```
 
 *CPU飙高*
@@ -192,6 +208,7 @@ top -H -p PID 查看这个进程里面最消耗CPU的线程PID
 printf "0x%x\n" 线程PID 转为16进制PID
 jstack 进程PID | grep -A 20 十六进制线程PID
 可以得到占用CPU飙高的线程的代码行
+
 ```
 
 ### JVM参数
@@ -204,6 +221,7 @@ jstack 进程PID | grep -A 20 十六进制线程PID
 -Xmn192m // 新生代大小
 -XX:MetaspaceSize=128m // 元空间
 -Xss512k // 栈大小
+
 ```
 
 打印gc日志相关
@@ -219,6 +237,7 @@ jstack 进程PID | grep -A 20 十六进制线程PID
 -XX:+UseGCLogFileRotation // 打印到多个文件中
 -XX:NumberOfGCLogFiles=5 // 最多生成5个文件，满了会循环覆盖第一个文件
 -XX:GCLogFileSize=30m  // 每个文件大小
+
 ```
 
 oom相关
@@ -226,12 +245,14 @@ oom相关
 ```
 -XX:-HeapDumpOnOutOfMemoryError 
 -XX:HeapDumpPath=/data/cs-dubbo-10880/javadump/cs-dubbo-jvmdump.hprof
+
 ```
 
 禁用偏向锁
 
 ```
 -XX:-UseBiasedLocking
+
 ```
 
 服务启动的时候真实的分配物理内存给jvm
@@ -242,6 +263,7 @@ jvm启动的时候速度会下降很多，如果不在意启动时长可以设�
 
 ```
 -XX:+AlwaysPreTouch
+
 ```
 
 垃圾回收
@@ -261,6 +283,7 @@ G1
 // SoftRefLRUPolicyMSPerMB这个参数大概意思是每1M空闲空间可保持的SoftReference对象的生存时长(单位是ms毫秒)，LRU是Least Recently Used的缩写，最近最少使用的。
 这个值jvm默认是1000ms，如果被设置为0，就会导致软引用对象马上被回收掉，进而会导致重新频繁的生成新的类，而无法达到复用的效果。
 先慎用
+
 ```
 
 CMS
@@ -269,6 +292,7 @@ CMS
 -XX:+UseConcMarkSweepGC 
 -XX:+ExplicitGCInvokesConcurrentAndUnloadsClasses 
 -XX:+CMSScavengeBeforeRemark
+
 ```
 
 # JDK
@@ -288,7 +312,6 @@ JVM + java基础类库
 作用：
 
 - 不同操作系统下需要不同的JVM（安装JDK），从软件层面屏蔽不同操作系统在底层硬件和指令上的区别
-
 - 类加载、执行引擎（执行字节码，垃圾收集）、运行时数据区
 
 当运行java命令执行一个.class文件时，会由JVM的类加载器将其类信息加载至运行时数据区的方法区，后由执行引擎执行程序
@@ -321,10 +344,10 @@ JVM + java基础类库
 int a = 1;
 int b = 2;
 int c = a + b 
+
 ```
 
 - 为a在局部变量表中开辟一块4字节空间，将1压入操作数栈，将操作数栈中的1出栈赋值给局部变量表a
-
 - 为b在局部变量表中开辟一块4字节空间，将1压入操作数栈，将操作数栈中的1出栈赋值给局部变量表b
 - 为c在局部变量表中开辟一块4字节空间，将局部变量表中a的值1和局部变量表中b的值2压入操作数栈，将1和2从操作数栈中弹出，进行iadd加运算，将结果3赋值给局部变量表c
 
@@ -381,6 +404,7 @@ a.setField(b);
 b.setField(a);
 a = null;// want to gc
 b = null;// want to gc
+
 ```
 
 因为彼此引用指向，引用计数为1，无法gc，导致内存泄露
@@ -460,7 +484,6 @@ jdk1.8以后，G1、ZGC采用的分区模型进行回收，不存在分代的概
 - 新生代收集器
 
 1. 只能使用一条线程进行垃圾收集工作
-
 2. 并且在垃圾收集的时候，所有的工作线程都需要停止工作（STW），等待垃圾收集线程完成以后，其他线程才可以继续工作。
 
 > 使用算法：复制算法
@@ -684,10 +707,3 @@ metaspace满了触发FullGC，可调高metaspace大小，减少GC次数
 ### 对象
 
 #### 对象头
-
-
-
-
-
-
-

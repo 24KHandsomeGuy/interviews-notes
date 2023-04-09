@@ -110,6 +110,7 @@ show global variables like 'interactive_timeout';
 
 ```sql
 show variables like 'query_cache%';
+
 ```
 
 ```properties
@@ -122,6 +123,7 @@ show variables like 'query_cache%';
 | query_cache_type             | OFF     |
 | query_cache_wlock_invalidate | OFF     |
 +------------------------------+---------+
+
 ```
 
 在**5.7**的版本，默认查询缓存是关闭的。官方给出的说法：
@@ -170,6 +172,7 @@ select Fields from Tables where Conditons.
 ```
 错误代码： 1064
 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near
+
 ```
 
 ### 预处理器
@@ -181,6 +184,7 @@ pre processor
 ```
 错误代码： 1146
 Table 'bibabo_marketing.aaa' doesn't exist
+
 ```
 
 ### 优化器
@@ -214,12 +218,14 @@ optimizer
 
 ```sql
 EXPLAIN SELECT * FROM bibabo_order.`order_main` WHERE id = 16
+
 ```
 
 json格式查看
 
 ```sql
 EXPLAIN FORMAT=JSON SELECT * FROM bibabo_order.`order_main` WHERE id = 16
+
 ```
 
 #### optimizer trace
@@ -232,6 +238,7 @@ SET optimizer_trace='enabled=ON';
 SELECT * FROM bibabo_order.`order_main` WHERE id = 14;
 SELECT * FROM information_schema.`OPTIMIZER_TRACE`;
 SET optimizer_trace='enabled=OFF';
+
 ```
 
 ### 执行器
@@ -245,6 +252,7 @@ SET optimizer_trace='enabled=OFF';
 
 ```sql
 show variables like 'datadir';
+
 ```
 
 建表语句
@@ -254,6 +262,7 @@ CREATE TABLE `bibabo_order` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
   PRIMARY KEY (`id`),
 ) ENGINE=InnoDB AUTO_INCREMENT=156140742 DEFAULT CHARSET=utf8 COMMENT='单品页分享重试表';
+
 ```
 
 ENGINE就是存储引擎
@@ -270,6 +279,7 @@ Mysql默认的存储引擎
 
 ```sql
 show engine innodb status;
+
 ```
 
 优点：支持事务、行锁、MVCC
@@ -340,6 +350,7 @@ Buffer Pool对应的一片连续的内存被划分为若干个页面，页面大
 
 ```cobol
 将第0号表 空间的10号页面的偏移量为100处的值更新为 2
+
 ```
 
 这样在事务提交时，就会把上述的内容刷新到磁盘中，即使之后系统崩溃了，重启之后只要按照上述内容所记录的步骤重新更新一下数据页，那么该事务对数据库中所做的修改就可以被恢复过来，这样就能满足持久性的要求了。
@@ -351,7 +362,6 @@ Buffer Pool对应的一片连续的内存被划分为若干个页面，页面大
 相较于在事务提交时将所有修改过的页刷新到磁盘中，只将该事务执行过程中产生的redo日志刷新到磁盘，有下面的好处：
 
 - **redo日志降低了刷盘频率**
-
 - **redo日志占用的空间非常小**
 - **redo日志是顺序写入磁盘的**。在执行事务的过程中，每执行一条语句，就可能产生若干条redo日志，这些日志是按照产生的顺序写入磁盘的，也就是顺序IO。
 
@@ -406,6 +416,7 @@ redo log buffer刷盘到redo log file的过程并不是真正的刷到磁盘中�
 
 ```sql
 show variables like 'innodb_flush_log_at_trx_commit';
+
 ```
 
 ```properties
@@ -414,6 +425,7 @@ show variables like 'innodb_flush_log_at_trx_commit';
 +--------------------------------+-------+
 | innodb_flush_log_at_trx_commit | 1     |
 +--------------------------------+-------+
+
 ```
 
 #### redo log file
@@ -637,6 +649,7 @@ autoCommit 默认为ON
 connection.setAutocommit(false)// 关闭自动提交 要手动提交事务
 ......
 commit()
+
 ```
 
 ### ACID
@@ -815,6 +828,7 @@ if (val != null) {return "success"};
 begin transaction;
 // 执行成功后将消息中的uid写入到redis中
 redisTemplate.set(KEY_PREFIX + UID);
+
 ```
 
 2.存在并发的场景。这种一般是异常情况，同一时刻客户端发送了多次相同的请求。需要加层分布式锁
@@ -835,6 +849,7 @@ begin transaction;
 // 执行成功后将消息中的uid写入到redis中
 redisTemplate.set(KEY_PREFIX + UID);
 redisTemplate.unlock();
+
 ```
 
 ### 数据库

@@ -824,6 +824,9 @@ cd /usr/local/redis/bin/
 ```
 
 守护进程后台启动
+```bash
+./redis-server redis.conf &
+```
 
 ```
 cp /usr/local/redis/redis.conf /usr/local/redis/bin/
@@ -1681,7 +1684,7 @@ rm -rf /var/lib/docker
 
 chmod 777 整个项目文件夹
 
-1.编写启动脚本vim start.sh
+1.编写启动脚本touch start.sh
 
 可以本地编写好复制，参考nacos的启动脚本
 
