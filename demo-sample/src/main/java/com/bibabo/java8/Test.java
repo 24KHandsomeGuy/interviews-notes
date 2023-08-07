@@ -1,10 +1,13 @@
 package com.bibabo.java8;
 
+
+import com.alibaba.fastjson.JSONObject;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author fukuixiang
@@ -14,17 +17,29 @@ import java.util.Set;
  */
 public class Test {
 
-
     public static void main(String[] args) throws IOException {
+        List<DecorationLayoutEntity> decorationLayoutConfigs = new ArrayList();
+        decorationLayoutConfigs.add(new DecorationLayoutEntity(2, 4));
+        decorationLayoutConfigs.add(new DecorationLayoutEntity(1, 3));
+        decorationLayoutConfigs.add(new DecorationLayoutEntity(1, 2));
 
-        List<Integer> list = new ArrayList<>();
-        list.add(1);list.add(3);list.add(4);list.add(5);list.add(9);
-        Object[] rst = list.stream().map(t -> "t" + t).toArray();//.collect(Collectors.toSet());
-        System.out.println(rst.length);
+        Map<Integer, List<DecorationLayoutEntity>> sortLayoutMap = new TreeMap<>(
+                decorationLayoutConfigs.stream()
+                        .collect(Collectors.groupingBy(DecorationLayoutEntity::getSort))
+        );
+        System.out.println(JSONObject.toJSON(sortLayoutMap));
 
-        Set<String> set = new HashSet<>();
-        set.add("1");
-        set.add("2");
-        System.out.println(set);
+        Map<Integer, Set<DecorationLayoutEntity>> result = new TreeMap<>();
+        for(Map.Entry<Integer, List<DecorationLayoutEntity>> entry : sortLayoutMap.entrySet()){
+            result.put(entry.getKey(), new HashSet<>(entry.getValue()));
+        }
+        System.out.println(JSONObject.toJSON(result));
+    }
+
+    @AllArgsConstructor
+    @Data
+    public static class DecorationLayoutEntity {
+        int sort;
+        int value;
     }
 }
