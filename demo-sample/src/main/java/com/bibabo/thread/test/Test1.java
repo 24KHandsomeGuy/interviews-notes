@@ -28,8 +28,8 @@ public class Test1 {
         new Thread(new ThreadA(baseDTOList, countDownLatch)).start();
 
 
-        countDownLatch.await();
-        System.out.println(baseDTOList);
+        boolean result = countDownLatch.await(1, TimeUnit.SECONDS);
+        System.out.println("result:" + result + ", baseDTOList:" + baseDTOList);
     }
 
     public static class ThreadA implements Runnable {

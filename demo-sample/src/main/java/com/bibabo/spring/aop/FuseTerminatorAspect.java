@@ -18,6 +18,7 @@ public class FuseTerminatorAspect implements MethodInterceptor {
         Object o = methodInvocation.proceed();
         System.out.println("FuseTerminatorAspect.end");
 
+        System.out.println(methodInvocation.getMethod().getName()+ "------" +methodInvocation.getMethod().getDeclaringClass().getName());
         return o;
     }
 }
