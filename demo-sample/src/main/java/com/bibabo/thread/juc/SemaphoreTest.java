@@ -32,11 +32,10 @@ public class SemaphoreTest {
 
         @Override
         public void run() {
-
             try {
                 semaphore.acquire();
                 System.out.println("线程" + Thread.currentThread().getName() + "获取令牌 正在执行");
-                TimeUnit.SECONDS.sleep(new Random().nextInt(100));
+                TimeUnit.SECONDS.sleep(new Random().nextInt(50));
                 semaphore.release();// 默认释放1
                 System.out.println("线程" + Thread.currentThread().getName() + "释放令牌 执行结束");
             } catch (InterruptedException e) {

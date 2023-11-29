@@ -13,9 +13,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * @time 17:45
  * @description 创建一个新线程去执行策略
  */
-public class NewThreadExecutePolicy implements RejectedExecutionHandler {
+public class NewThreadRunsPolicy implements RejectedExecutionHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NewThreadExecutePolicy.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NewThreadRunsPolicy.class);
 
     private static final AtomicLong newThreadCntAtomic = new AtomicLong(1);
 

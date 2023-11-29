@@ -19,6 +19,7 @@ public class DynamicThreadPool {
             if (i == 10) {
                 threadPoolExecutor.setCorePoolSize(10);
                 threadPoolExecutor.setMaximumPoolSize(10);
+                threadPoolExecutor.prestartAllCoreThreads();
             }
             if (i == 50) {
                 threadPoolExecutor.setCorePoolSize(4);
