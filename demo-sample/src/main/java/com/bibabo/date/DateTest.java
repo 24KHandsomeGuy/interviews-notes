@@ -20,6 +20,11 @@ public class DateTest {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String s = sdf.format(c.getTime());
         System.out.println(s);
+
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(1701791999000L);
+        System.out.println(sdf.format(calendar.getTime()));
     }
 
 }
