@@ -7,7 +7,7 @@ import java.util.List;
  * @author FuKuiXiang
  * @version 1.0.0
  * @date 2023/11/29 22:04
- * @Description 具体分页迭代器类：具体迭代器类
+ * @Description 分页迭代器
  */
 public class MyConcretePageIterator<T> extends MyPageIterator<T> {
 
@@ -20,9 +20,9 @@ public class MyConcretePageIterator<T> extends MyPageIterator<T> {
         this.totalPage = (int) Math.ceil((((double) objectList.size() + (double) pageSize) / (double) pageSize - 1));
         this.cursor = 0;
         this.reversalCursor = this.totalPage - 1;
-        this.objectListPages = new ArrayList<>();
+        this.objectListPages = new ArrayList<>(this.totalPage);
         for (int i = 0; i < this.totalPage; i++) {
-            List<T> objList = new ArrayList<>();
+            List<T> objList = new ArrayList<>(pageSize);
             for (int j = 0; j < pageSize; j++) {
                 if (i * pageSize + j > objectList.size() - 1) {
                     break;
@@ -34,17 +34,19 @@ public class MyConcretePageIterator<T> extends MyPageIterator<T> {
     }
 
     @Override
-    public void previousPage() {
-        if (this.reversalCursor > -1) {
-            this.reversalCursor--;
-        }
+    public List<T> previousPage() {
+        List<T> objects = this.objectListPages.get(reversalCursor);
+        this.reversalCursor--;
+        return objects;
     }
 
     @Override
-    public void nextPage() {
+    public List<T> nextPage() {
+        List<T> objects = this.objectListPages.get(cursor);
         if (this.cursor < this.totalPage) {
             this.cursor++;
         }
+        return objects;
     }
 
     @Override
@@ -57,13 +59,4 @@ public class MyConcretePageIterator<T> extends MyPageIterator<T> {
         return cursor.equals(this.totalPage);
     }
 
-    @Override
-    public List<T> getPreviousPage() {
-        return this.objectListPages.get(reversalCursor);
-    }
-
-    @Override
-    public List<T> getNextPage() {
-        return this.objectListPages.get(cursor);
-    }
 }

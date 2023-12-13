@@ -10,16 +10,12 @@ import java.util.List;
  */
 public abstract class MyPageIterator<T> {
 
-    public abstract void previousPage();
-
-    public abstract void nextPage();
-
     public abstract Boolean isFirstPage();
 
     public abstract Boolean isLastPage();
 
-    public abstract List<T> getPreviousPage();
+    public abstract List<T> previousPage();
 
-    public abstract List<T> getNextPage();
+    public abstract List<T> nextPage();
 
 }
