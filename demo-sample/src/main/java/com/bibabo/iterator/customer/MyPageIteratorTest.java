@@ -1,9 +1,5 @@
 package com.bibabo.iterator.customer;
 
-import com.bibabo.iterator.standard.AbstractObjectList;
-import com.bibabo.iterator.standard.ConcreteObjectList;
-import com.bibabo.iterator.standard.PageIterator;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,18 +23,32 @@ public class MyPageIteratorTest {
         objects.add("7");
         objects.add("8");
         objects.add("9");
-        MyConcretePageIterator<String> myConcretePageIterator = new MyConcretePageIterator<>(objects, 4);
+        NewListConcretePageIterator<String> newListConcretePageIterator = new NewListConcretePageIterator<>(objects, 4);
 
-        while (!myConcretePageIterator.isLastPage()) {
+        while (!newListConcretePageIterator.isLastPage()) {
             System.out.println("下一页：");
-            List<String> objPage = myConcretePageIterator.nextPage();
+            List<String> objPage = newListConcretePageIterator.nextPage();
             System.out.println(objPage);
         }
         System.out.println();
 
-        while (!myConcretePageIterator.isFirstPage()) {
+        while (!newListConcretePageIterator.isFirstPage()) {
             System.out.println("上一页：");
-            List<String> objPage = myConcretePageIterator.previousPage();
+            List<String> objPage = newListConcretePageIterator.previousPage();
+            System.out.println(objPage);
+        }
+        System.out.println("楚河汉界：");
+        SubListConcretePageIterator<String> subListConcretePageIterator = new SubListConcretePageIterator<>(objects, 4);
+        while (!subListConcretePageIterator.isLastPage()) {
+            System.out.println("下一页：");
+            List<String> objPage = subListConcretePageIterator.nextPage();
+            System.out.println(objPage);
+        }
+        System.out.println();
+
+        while (!subListConcretePageIterator.isFirstPage()) {
+            System.out.println("上一页：");
+            List<String> objPage = subListConcretePageIterator.previousPage();
             System.out.println(objPage);
         }
     }
