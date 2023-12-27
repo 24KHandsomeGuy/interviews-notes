@@ -50,6 +50,9 @@ public class CompletableFutureTest04 {
         });
 
         CompletableFuture<Void> completableFuture = CompletableFuture.allOf(completableFuture1, completableFuture2)
+                .whenComplete((result, throwable) -> {
+                    System.out.println("主线程asdasd:" + result);
+                })
                 .thenAccept(result -> System.out.println("主线程已经拿到最快排序算法的执行完毕的响应 ---- " + result))
                 ;
 
