@@ -21,6 +21,8 @@ public class InstantTest {
 
         System.out.println(Duration.between(threeSecondAgo, Instant.now()).toMillis());
 
+        System.out.println(Instant.now().toEpochMilli() - threeSecondAgo.toEpochMilli());
+
 
     }
 }
