@@ -23,6 +23,7 @@
         <aop:advisor pointcut-ref="apiMethodPointcut" advice-ref="fuseTerminatorAspect" order="0"/>
     </aop:config>-->
 
+    <!--expression="execution(public * com.bibabo.spring.aop.WareInfoExtensionServiceImpl.*(..))"/>-->
     <aop:config>
         <aop:pointcut id="apiMethodPointcut"
                       expression="execution(* com.bibabo.spring.aop.WareInfoExtensionServiceImpl.getWareInfo(..))"/>
