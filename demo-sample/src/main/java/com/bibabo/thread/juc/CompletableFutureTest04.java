@@ -58,8 +58,9 @@ public class CompletableFutureTest04 {
 
         System.out.println("主线程前置打印");
         try {
-            System.out.println("主线程：" + completableFuture.get(20, TimeUnit.SECONDS));
-        } catch (TimeoutException e) {
+            // System.out.println("主线程：" + completableFuture.get(20, TimeUnit.SECONDS));
+            System.out.println("主线程：" + completableFuture.join());
+        } catch (Exception e) {
             System.out.println(e);
         }
         /*System.out.println("主线程等子1：" + completableFuture1.get(5, TimeUnit.SECONDS));
