@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd" >
+<generatorConfiguration >
+    <classPathEntry location="D:\repository\mysql\mysql-connector-java\5.1.28\mysql-connector-java-5.1.28.jar" />
+    <context id="default" targetRuntime="MyBatis3">
+
+        <!-- 指定生成的java文件的编码,没有直接生成到项目时中文可能会乱码 -->
+        <property name="javaFileEncoding" value="UTF-8"/>
+        <!-- 这里的type里写的是你的实现类的类全路径 -->
+        <commentGenerator>
+            <property name="suppressAllComments" value="true" />
+            <!-- 是否去除自动生成的注释 true：是 ： false:否 -->
+            <property name="suppressAllComments" value="true" />
+        </commentGenerator>
+
+        <!--driverClass="org.postgresql.Driver"-->
+        <jdbcConnection
+                driverClass="com.mysql.jdbc.Driver"
+                connectionURL="jdbc:mysql://wmswdb.uat.chunbo.com:3309/wmsinvdb?generateSimpleParameterMetadata=true"
+                userId="wms"
+                password="Z@NRJOd7" >
+            <property name="useInformationSchema" value="true"></property>
+        </jdbcConnection>
+        <!-- 类型转换 -->
+        <javaTypeResolver>
+            <!-- 是否使用bigDecimal， false可自动转化以下类型（Long, Integer, Short, etc.） -->
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+
+        <!-- generate Model -->
+        <javaModelGenerator targetPackage="com.chunbo.rwms.inv.model"
+                            targetProject="..\chunbo-wms-model\src\main\java">
+            <property name="enableSubPackages" value="true" />
+            <property name="trimStrings" value="true" />
+        </javaModelGenerator>
+
+        <!-- generate xml -->
+        <sqlMapGenerator targetPackage="src\main\resources\rwmsinv-sqlmap"
+                         targetProject="..\chunbo-wms-dao">
+            <property name="enableSubPackages" value="false" />
+        </sqlMapGenerator>
+
+        <!-- generate dao Mapper  -->
+        <javaClientGenerator type="XMLMAPPER"
+                             targetPackage="com.chunbo.wms.rwms.inv"
+                             targetProject="..\chunbo-wms-dao\src\main\java">
+            <property name="enableSubPackages" value="true" />
+        </javaClientGenerator>
+
+        <!--<table schema="wmsinvdb" tableName="purchase_recv_detail" mapperName=""
+            enableCountByExample="false" enableUpdateByExample="false"
+            enableDeleteByExample="false" enableSelectByExample="false"
+            selectByExampleQueryId="false">
+          &lt;!&ndash;<columnOverride column="DOUBLE" jdbcType="DECIMAL" />  &ndash;&gt;
+        </table>-->
+
+        <!--指定数据库所有表-->
+        <!--<table schema="catalogdb" tableName="product"
+        enableCountByExample="false" enableUpdateByExample="false"
+        enableDeleteByExample="false" enableSelectByExample="false"
+        selectByExampleQueryId="false">
+    </table>-->
+
+        <table schema="wmsinvdb" tableName="rwms_lot_inv"
+               domainObjectName="RwmsLotInv"
+               enableCountByExample="false" enableUpdateByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false"
+               selectByExampleQueryId="false">
+        </table>
+
+        <!--<table schema="promotiondb" tableName="promotion"
+            enableCountByExample="false" enableUpdateByExample="false"
+            enableDeleteByExample="false" enableSelectByExample="false"
+            selectByExampleQueryId="false">
+        </table>
+
+        <table schema="promotiondb" tableName="promotion_product_map"
+            enableCountByExample="false" enableUpdateByExample="false"
+            enableDeleteByExample="false" enableSelectByExample="false"
+            selectByExampleQueryId="false">
+        </table>-->
+
+    </context>
+</generatorConfiguration>

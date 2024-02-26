@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<!-- 所有的配置均在根元素 generatorConfiguration 下 -->
+<!--
+ 在该文件中，所有的配置均在根元素 generatorConfiguration 下
+ 根元素 generatorConfiguration 有 3 个子元素可供配置，这 3 个子元素必须按照下面给出的次数和顺序进行配置：
+ （没错，MyBatis-Generator 对配置的顺序也有严格的要求）
+
+properties (0 or 1)，可出现 0 次或 1 次。
+classPathEntry (0...N)，可出现 0 次或多次。
+context (1...N)，至少出现 1 次。
+
+其中，properties 和 classPathEntry 元素用于引入外部配置或文件；context 是核心元素，里面包含有各种详细配置。
+ -->
+<generatorConfiguration>
+    <classPathEntry
+            location="/Users/fukuixiang/work/IT/Code/Damon/interviews-notes/mybatis-generator/src/main/resources/mysql-connector-java-5.1.17.jar"/>
+    <context id="default" targetRuntime="MyBatis3">
+        <!-- 生成的Java文件的编码 -->
+        <property name="javaFileEncoding" value="UTF-8"/>
+        <!-- beginningDelimiter和endingDelimiter：指明数据库的用于标记数据库对象名的符号，比如ORACLE就是双引号，MYSQL默认是`反引号； -->
+        <property name="beginningDelimiter" value="`"/>
+        <property name="endingDelimiter" value="`"/>
+
+        <!-- 注释生成器 -->
+        <commentGenerator>
+            <property name="suppressDate" value="true"/>
+            <property name="suppressAllComments" value="true"/>
+        </commentGenerator>
+
+        <!-- 必须要有的，使用这个配置链接数据库 @TODO:是否可以扩展 -->
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:MySql://10.56.132.109:14925/dcms?generateSimpleParameterMetadata=true"
+                        userId="dcms"
+                        password="J^DO4PiNyEG9TIQ">
+            <!-- 若为 8.0 版本以上的 mysql-connector-java 驱动，需要设置 nullCatalogMeansCurrent = true -->
+            <property name="nullCatalogMeansCurrent" value="true"/>
+        </jdbcConnection>
+
+        <!-- 生成domain对象 -->
+        <javaModelGenerator targetPackage="com.dmall.dcms.dao.model" targetProject="src/main/java">
+            <property name="enableSubPackages" value="true"/>
+        </javaModelGenerator>
+
+        <!-- 生成Mapper文件 -->
+        <sqlMapGenerator targetPackage="com.dmall.dcms.dao.mapper" targetProject="src/main/resources">
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+
+        <!-- 生成Mapper接口 -->
+        <javaClientGenerator targetPackage="com.dmall.dcms.dao.mapper" type="XMLMAPPER"
+                             targetProject="src/main/java">
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+
+        <!-- ============================================================================== -->
+        <!--domainObjectName="User"-->
+        <table tableName="decoration_page_schedule" delimitIdentifiers="true" domainObjectName="DecorationPageSchedule"
+               enableCountByExample="false" enableUpdateByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false"
+               selectByExampleQueryId="false">
+            <!--<property name="useActualColumnNames" value="true"/>-->
+            <generatedKey column="id" sqlStatement="JDBC"/>
+        </table>
+        <!-- ============================================================================= -->
+    </context>
+</generatorConfiguration>
