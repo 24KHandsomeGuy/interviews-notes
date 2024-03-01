@@ -2,6 +2,9 @@ package com.dmall.dcms.dao.model;
 
 import java.util.Date;
 
+/**
+ *
+ */
 public class DecorationPageSchedule {
     private Long id;
 
