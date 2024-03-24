@@ -1,11 +1,12 @@
 package com.bibabo.redis.jedis.delayQueue;
 
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,27 +28,29 @@ public class DelayQueueDemo {
         Jedis jedis = new JedisPool(config, "39.107.156.177", 6379, 5000, "123456", 14).getResource();
 
         String queueKey = "delay_queue";
-
+        long schedule = System.currentTimeMillis() + 5000;
         // 实际开发建议使用业务 ID 和随机生成的唯一 ID 作为 value, 随机生成的唯一 ID 可以保证消息的唯一性, 业务 ID 可以避免 value 携带的信息过多
         String pageId1 = UUID.randomUUID().toString();
-        jedis.zadd(queueKey, System.currentTimeMillis() + 5000, pageId1);
+        long zaddResult1 = jedis.zadd(queueKey, schedule, pageId1);
+        System.out.println("zaddResult1 = " + zaddResult1);
 
-        String pageId2 = UUID.randomUUID().toString();
-        jedis.zadd(queueKey, System.currentTimeMillis() + 5000, pageId2);
+        Set<String> value = jedis.zrangeByScore(queueKey, schedule, schedule);
+        System.out.println(value);
+        // 幂等
+        /*if (CollectionUtils.isEmpty(value)) {
+            String pageId2 = UUID.randomUUID().toString();
+            long zaddResult2 = jedis.zadd(queueKey, schedule, pageId2);
+            System.out.println("zaddResult2 = " + zaddResult2);
+        }*/
+        long zaddResult2 = jedis.zadd(queueKey, schedule, pageId1);
+        System.out.println("zaddResult1 第二次 = " + zaddResult2);
 
-        new Thread(() -> {
-            handleDelayQueue(jedis, queueKey);
-        }).start();
-
-
-        /*new Thread(() -> {
-            handleDelayQueue(jedis, queueKey);
-        }).start();*/
+        new Thread(() -> handleDelayQueue(jedis, queueKey)).start();
     }
 
     public static void handleDelayQueue(Jedis jedis, String queueKey) {
         while (true) {
-            // 只获取第一条数据, 只获取不会移除数据
+            // 只获取不会移除数据
             Set<String> resultList = jedis.zrangeByScore(queueKey, System.currentTimeMillis() - 1000 * 60 * 60, System.currentTimeMillis() + 1);
             System.out.println(JSONObject.toJSONString(resultList));
             if (resultList.size() == 0) {

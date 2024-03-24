@@ -31,6 +31,8 @@ public class DistributeLock {
 
     private String currentNodePath;
 
+    List<String> childrenNodeList;
+
     public DistributeLock(String lockPath) {
         this.lockPath = lockPath;
         try {
@@ -55,7 +57,17 @@ public class DistributeLock {
         waitForLock();
     }
 
-    private void waitForLock() {
+    private boolean waitForLock() {
+        String firstNode = getFirstNode();
+        if (currentNodePath.equals(lockPath + "/" + firstNode)) {
+            // 当前节点是最小的节点
+            System.out.println("线程：" + Thread.currentThread().getName() + "当前节点是最小的节点，获取锁成功：" + currentNodePath);
+            return true;
+        }
+        // 不是最小的节点，寻找前一个节点
+        int index = Collections.binarySearch(childrenNodeList, currentNodePath.substring(lockPath.length() + 1));
+        preNodePath = childrenNodeList.get(index - 1);
+        System.out.println("线程：" + Thread.currentThread().getName() + "当前节点不是最小的节点：" + currentNodePath + "，前一个节点是：" + preNodePath);
         String threadName = Thread.currentThread().getName();
         CountDownLatch countDownLatch = new CountDownLatch(1);
         // 监听上一个节点
@@ -80,30 +92,28 @@ public class DistributeLock {
             } catch (InterruptedException e) {
                 System.out.println("线程：" + Thread.currentThread().getName() + "等待节点变化异常：" + e.getMessage());
             }
+            zkClient.unsubscribeDataChanges(preNodeFullPath, zkDataListener);
+        } else {
+            System.out.println("线程：" + threadName + "获取锁失败等待其他线程释放锁唤醒：" + preNodeFullPath + "，节点不存在");
         }
-        zkClient.unsubscribeDataChanges(preNodeFullPath, zkDataListener);
+        return waitForLock();
     }
 
     public boolean tryLock(String nodeValue) {
         // 创建临时有序节点
         this.currentNodePath = zkClient.createEphemeralSequential(lockPath + "/", nodeValue);
+        return waitForLock();
+    }
+
+    private String getFirstNode() {
         // 获取所有子节点
         List<String> childrenNodeList = zkClient.getChildren(lockPath);
+        this.childrenNodeList = childrenNodeList;
         // 排序
         Collections.sort(childrenNodeList);
-        System.out.println("线程：" + Thread.currentThread().getName() + "创建临时有序节点：" + currentNodePath + "，childrenNodeList = " + childrenNodeList);
+        System.out.println("线程：" + Thread.currentThread().getName() + "临时有序节点：" + currentNodePath + "，childrenNodeList = " + childrenNodeList);
         // 判断当前节点是否是最小的节点
-        String firstNode = childrenNodeList.get(0);
-        if (currentNodePath.equals(lockPath + "/" + firstNode)) {
-            // 当前节点是最小的节点
-            System.out.println("线程：" + Thread.currentThread().getName() + "当前节点是最小的节点，获取锁成功：" + currentNodePath);
-            return true;
-        }
-        // 不是最小的节点，寻找前一个节点
-        int index = Collections.binarySearch(childrenNodeList, currentNodePath.substring(lockPath.length() + 1));
-        preNodePath = childrenNodeList.get(index - 1);
-        System.out.println("线程：" + Thread.currentThread().getName() + "当前节点不是最小的节点：" + currentNodePath + "，前一个节点是：" + preNodePath);
-        return false;
+        return childrenNodeList.get(0);
     }
 
     public void unlock() {
