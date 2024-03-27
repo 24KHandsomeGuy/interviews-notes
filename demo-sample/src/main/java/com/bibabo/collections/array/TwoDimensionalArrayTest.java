@@ -1,4 +1,4 @@
-package com.bibabo.demo.twodimensionalarray;
+package com.bibabo.collections.array;
 
 /**
  * @Author: Damon Fu

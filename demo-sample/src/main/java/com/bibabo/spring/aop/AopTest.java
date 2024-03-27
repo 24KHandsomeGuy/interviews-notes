@@ -1,8 +1,6 @@
 package com.bibabo.spring.aop;
 
-import com.bibabo.spring.annotion.beanlifecycle.MyConfiguration;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -15,7 +13,7 @@ public class AopTest {
 
     public static void main(String[] args) {
 
-        ApplicationContext context = new ClassPathXmlApplicationContext("spring-config.xml");
+        ApplicationContext context = new ClassPathXmlApplicationContext("com/bibabo/spring/aop/spring-config-back.xml");
         WareInfoExtensionServiceImpl impl = context.getBean("wareInfoExtensionServiceImpl", WareInfoExtensionServiceImpl.class);
         impl.getWareInfo();
     }

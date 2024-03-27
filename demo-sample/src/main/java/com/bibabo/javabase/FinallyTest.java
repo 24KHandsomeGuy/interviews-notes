@@ -1,4 +1,4 @@
-package com.bibabo.alibaba;
+package com.bibabo.javabase;
 
 /**
  * @author fukuixiang
@@ -15,9 +15,9 @@ public class FinallyTest {
     }
 
     private static boolean test() {
-
         try {
             return 2200 == 1 / 0;
+            // return 2200 == 2100;
         } catch (RuntimeException e) {
             System.out.println("错误" + e.getMessage());
             return true;

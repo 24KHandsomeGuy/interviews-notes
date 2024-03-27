@@ -9,10 +9,8 @@ package com.bibabo.dynamicProxy;
 public class dynamicProxyTest {
 
     public static void main(String[] args) {
-
         HelloService helloService = new JdkDynamicProxy(new HelloServiceImpl()).getProxy();
         helloService.sayHello();
         helloService.sayHello2();
     }
-
 }

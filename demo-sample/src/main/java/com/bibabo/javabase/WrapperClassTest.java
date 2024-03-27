@@ -1,11 +1,11 @@
-package com.bibabo.operation;
+package com.bibabo.javabase;
 
 /**
  * @Author: FuKuiXiang
  * @Date: 2023/1/4 18:25
  * @Description:
  */
-public class OperationTest {
+public class WrapperClassTest {
 
     public static void main(String[] args) {
 

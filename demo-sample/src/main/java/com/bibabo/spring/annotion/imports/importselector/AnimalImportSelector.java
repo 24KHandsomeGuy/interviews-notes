@@ -12,6 +12,6 @@ public class AnimalImportSelector implements ImportSelector {
 
     @Override
     public String[] selectImports(AnnotationMetadata annotationMetadata) {
-        return new String[]{"Cat", "Dog"};
+        return new String[]{"com.bibabo.spring.annotion.imports.domain.Cat", "com.bibabo.spring.annotion.imports.domain.Dog"};
     }
 }

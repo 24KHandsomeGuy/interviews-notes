@@ -1,4 +1,4 @@
-package com.bibabo.reflect;
+package com.bibabo.javabase.reflect;
 
 import lombok.Data;
 

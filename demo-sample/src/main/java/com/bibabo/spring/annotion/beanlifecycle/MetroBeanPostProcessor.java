@@ -15,6 +15,7 @@ public class MetroBeanPostProcessor implements BeanPostProcessor {
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        System.out.println("postProcessBeforeInitialization bean do something sample");
         if (bean instanceof Metro) {
             System.out.println("postProcessBeforeInitialization bean metro do something sample");
         }

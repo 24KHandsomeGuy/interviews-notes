@@ -19,8 +19,8 @@ public class PlantImportBeanDefinitionRegistrar implements ImportBeanDefinitionR
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry, BeanNameGenerator importBeanNameGenerator) {
         // IOC容器中如果存在动物，那么，也需要存在植物
-        boolean isDogExist = registry.containsBeanDefinition("Cat");
-        boolean isCatExist = registry.containsBeanDefinition("Dog");
+        boolean isDogExist = registry.containsBeanDefinition("com.bibabo.spring.annotion.imports.domain.Cat");
+        boolean isCatExist = registry.containsBeanDefinition("com.bibabo.spring.annotion.imports.domain.Dog");
         if (isDogExist && isCatExist) {
             BeanDefinition roseBeanDefinition = new RootBeanDefinition(Rose.class);
             String roseBeanName = importBeanNameGenerator.generateBeanName(roseBeanDefinition, registry);

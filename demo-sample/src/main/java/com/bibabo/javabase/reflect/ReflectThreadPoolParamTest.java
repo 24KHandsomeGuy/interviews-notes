@@ -1,4 +1,4 @@
-package com.bibabo.reflect;
+package com.bibabo.javabase.reflect;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.LinkedBlockingQueue;
