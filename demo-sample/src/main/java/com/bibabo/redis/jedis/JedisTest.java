@@ -1,5 +1,8 @@
 package com.bibabo.redis.jedis;
 
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+
 /**
  * @author fukuixiang
  * @date 2021/4/19
@@ -13,10 +16,15 @@ public class JedisTest {
 
     public static void main(String[] args) {
 
-        //MyJedisUtil.getJedis().set("111", "111");
-        // System.out.println(MyJedisUtil.getJedis().get("DEMO_FILTER_1"));;
+        JedisPoolConfig config = new JedisPoolConfig();
+        config.setMinIdle(10);
+        config.setMaxIdle(10);
+        config.setMaxWaitMillis(10000);
+        config.setTestOnBorrow(false);
+        config.setTestOnReturn(false);
+        JedisPool jedisPool = new JedisPool(config, "39.107.156.177", 6379, 5000, "123456", 0);
 
-        System.out.println(MyJedisUtil.getJedis().set("HAHADEMO_FILTER    _1", 1 + ""));;
+        System.out.println(jedisPool.getResource().decr("stock"));
     }
 
 }

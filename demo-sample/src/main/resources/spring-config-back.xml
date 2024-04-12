@@ -14,6 +14,7 @@
     <context:component-scan base-package="com.bibabo.spring.aop"/>
 
     <bean id="wareInfoExtensionServiceImpl" class="com.bibabo.spring.aop.WareInfoExtensionServiceImpl"/>
+    <bean id="wareInfoExtensionServiceImpl2" class="com.bibabo.spring.aop.WareInfoExtensionServiceImpl2"/>
     <!-- CMS方法层切面：接口超时子链路熔断 -->
     <bean id="fuseTerminatorAspect" class="com.bibabo.spring.aop.FuseTerminatorAspect"/>
     <!-- 批量渲染商品链路熔断 -->
@@ -24,9 +25,15 @@
     </aop:config>-->
 
     <!--expression="execution(public * com.bibabo.spring.aop.WareInfoExtensionServiceImpl.*(..))"/>-->
-    <aop:config>
+    <!--<aop:config>
         <aop:pointcut id="apiMethodPointcut"
                       expression="execution(* com.bibabo.spring.aop.WareInfoExtensionServiceImpl.getWareInfo(..))"/>
+        <aop:advisor pointcut-ref="apiMethodPointcut" advice-ref="fuseTerminatorAspect" order="0"/>
+    </aop:config>-->
+
+    <aop:config>
+        <aop:pointcut id="apiMethodPointcut"
+                      expression="execution(public * com.bibabo.spring.aop..*.*(..))"/>
         <aop:advisor pointcut-ref="apiMethodPointcut" advice-ref="fuseTerminatorAspect" order="0"/>
     </aop:config>
 </beans>

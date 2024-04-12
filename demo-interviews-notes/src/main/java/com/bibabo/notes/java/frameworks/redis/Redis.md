@@ -172,6 +172,15 @@ AOF很大的时候会重写，fork子进程重写，重写的过程中，把后�
 
 操作系统缓存刷到硬盘 默认是1s
 
+aof的修改内容持久化写入aof file的步骤
+aof buffer → os buffer → aof file
+appendfsync=always，每次修改事件都将aof buffer的内容写到aof文件并同步aof文件，这种同步策略的安全性最高，效率最低，发生系统奔溃时最多丢失一个事件循环的数据。
+appendfsync=everysec，每次修改都aof buffer内容写到aof文件，每秒同步一次aof文件，这种同步策略与每次修改都同步的策略相比，安全性差一些，但性能高一些，是性能与安全性的折中，发生系统奔溃时最多会丢失1s的数据。
+appendsync=no，每次修改都将aof buffer内容写到aof文件，同步动作的进行时机交给操作系统来决定，redis不管，这种安全性最低，但性能最好。操作系统系统一般考虑繁忙程度以及其它一些因素综合判断同步时机。
+
+appendsync=no同步策略与binlog的binlog_sync=0的刷盘策略思路是一样的，都是将刷盘的时机判断脚背操作系统。
+
+
 dump.rdb 或者 appendonly.aof文件 在服务器启动时 会自动加载到redis里
 
 ### Redis的Lua脚本

@@ -14,11 +14,15 @@ import org.aopalliance.intercept.MethodInvocation;
 public class FuseTerminatorAspect implements MethodInterceptor {
     @Override
     public Object invoke(MethodInvocation methodInvocation) throws Throwable {
-        System.out.println("FuseTerminatorAspect.invoke");
-        Object o = methodInvocation.proceed();
-        System.out.println("FuseTerminatorAspect.end");
-
-        System.out.println(methodInvocation.getMethod().getName()+ "------" +methodInvocation.getMethod().getDeclaringClass().getName());
-        return o;
+        ConsumerAspect consumerAspect = methodInvocation.getMethod().getAnnotation(ConsumerAspect.class);
+        ConsumerAspect consumerAspectClass = methodInvocation.getMethod().getDeclaringClass().getAnnotation(ConsumerAspect.class);
+        if (consumerAspect != null) {
+            System.out.println("FuseTerminatorAspect.invoke.consumerAspect:" + consumerAspect.value());
+            return null;
+        } else if (consumerAspectClass != null) {
+            System.out.println("FuseTerminatorAspect.invoke.consumerAspectClass:" + consumerAspectClass.value());
+            return null;
+        }
+        return methodInvocation.proceed();
     }
 }

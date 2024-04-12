@@ -6,14 +6,14 @@ package com.bibabo.spring.aop;
  * @date 2023/11/17 13:59
  * @Description
  */
-@ConsumerAspect(2000)
-public class WareInfoExtensionServiceImpl {
+@ConsumerAspect(4000)
+public class WareInfoExtensionServiceImpl2 {
 
     public void getWareInfo() {
         System.out.println("WareInfoExtensionServiceImpl.test");
     }
 
-    @ConsumerAspect(1000)
+    @ConsumerAspect(5000)
     public void getWareInfo2() {
         System.out.println("WareInfoExtensionServiceImpl.test2");
     }

@@ -7,7 +7,7 @@ package com.bibabo.java8.annotion;
  */
 public class AnnotationTest {
 
-    public static void main(String[] args) throws ClassNotFoundException {
+    public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException {
         Class<World> clazz = (Class<World>) new World().getClass();
         System.out.println(clazz.getAnnotation(MyAnnotation.class));
         /*System.out.println(clazz.getAnnotation(MySuperAnnotation.class));
@@ -17,6 +17,10 @@ public class AnnotationTest {
         System.out.println(clazz.getAnnotation(MyAnnotation.class));*/
         /*Class<MyAnnotation> clazz2 = MyAnnotation.class;
         System.out.println(clazz2.getAnnotation(MySuperAnnotation.class));*/
-        System.out.println(clazz.getAnnotation(MyAnnotation.class).getClass().getAnnotation(MySuperAnnotation.class));
+        // System.out.println(clazz.getAnnotation(MyAnnotation.class).getClass().getAnnotation(MySuperAnnotation.class));
+
+        // System.out.println(clazz.getAnnotation(MyAnnotation.class).value());
+
+        System.out.println(clazz.getDeclaredMethod("sayHello").getAnnotation(MyAnnotation.class).value());
     }
 }

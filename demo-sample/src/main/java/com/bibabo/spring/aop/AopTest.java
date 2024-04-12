@@ -13,8 +13,13 @@ public class AopTest {
 
     public static void main(String[] args) {
 
-        ApplicationContext context = new ClassPathXmlApplicationContext("com/bibabo/spring/aop/spring-config-back.xml");
+        ApplicationContext context = new ClassPathXmlApplicationContext("spring-config-back.xml");
         WareInfoExtensionServiceImpl impl = context.getBean("wareInfoExtensionServiceImpl", WareInfoExtensionServiceImpl.class);
+        WareInfoExtensionServiceImpl2 impl2 = context.getBean("wareInfoExtensionServiceImpl2", WareInfoExtensionServiceImpl2.class);
         impl.getWareInfo();
+        System.out.println("=====================================");
+        impl.getWareInfo2();
+        System.out.println("=====================================");
+        impl2.getWareInfo();
     }
 }
