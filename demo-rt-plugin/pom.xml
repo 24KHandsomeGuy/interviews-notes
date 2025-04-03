@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!--
+     pom.xml常用元素介绍
+        project 包含pom一些约束的信息
+        modelVersion 指定当前pom的版本
+        groupId（主项目标识，定义当前maven属于哪个项目，反写公司网址+项目名）、
+        artifactId（实际项目模块标识，项目名+模块名）、
+        version（当前项目版本号，第一个0标识大版本号，第二个0标示分支版本号，第三个0标识小版本号，0.0.1，snapshot快照，alpha内部测试，beta公测，release稳定，GA正式发布）
+        name项目描述名
+        url项目地址
+        description项目描述
+        developers开发人员列表
+        licenses许可证
+        organization：组织
+        dependencies：依赖列表
+        dependency：依赖项目 里面放置坐标
+        scope：包的依赖范围 test
+        optional ：设置依赖是否可选
+        exclusions：排除依赖传递列表
+        dependencyManagement 依赖的管理
+        build：为构建行为提供支持
+        plugins：插件列表
+        parent：子模块对父模块的继承
+        modules：聚合多个maven项目
+     -->
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bibabo</groupId>
+    <artifactId>demo-rt-plugin</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <flink.version>1.14.0</flink.version>
+        <hadoop.version>2.10.0</hadoop.version>
+        <scala.binary.version>2.11</scala.binary.version>
+        <fastjson.version>1.2.75</fastjson.version>
+        <flink-cdc.version>2.4.2</flink-cdc.version>
+        <flink.binary.version>1.14</flink.binary.version>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>flink-1.19</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <flink.version>1.19.1</flink.version>
+                <flink.binary.version>1.19</flink.binary.version>
+                <scala.binary.version></scala.binary.version>
+            </properties>
+        </profile>
+    </profiles>
+
+    <dependencies>
+        <!-- flink -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-kafka_${scala.binary.version}</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-base</artifactId>
+            <version>${flink.version}</version>
+            <scope>${flink.scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-java</artifactId>
+            <version>${flink.version}</version>
+            <scope>${flink.scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-clients_${scala.binary.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>${flink.scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-statebackend-rocksdb_${scala.binary.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>${flink.scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-table-planner_${scala.binary.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>${flink.scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-orc_${scala.binary.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>${flink.scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-runtime-web_${scala.binary.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>${flink.scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ververica</groupId>
+            <artifactId>flink-connector-mysql-cdc</artifactId>
+            <version>${flink-cdc.version}</version>
+        </dependency>
+        <!-- flink end -->
+
+        <!--hadoop-->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-yarn-client</artifactId>
+            <version>${hadoop.version}</version>
+            <scope>${hadoop.scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-common</artifactId>
+            <version>${hadoop.version}</version>
+            <scope>${hadoop.scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${hadoop.version}</version>
+            <scope>${hadoop.scope}</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>log4j</artifactId>
+                    <groupId>log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- hadoop end -->
+
+        <!-- fastjson Dependency -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${fastjson.version}</version>
+        </dependency>
+        <!-- hudi end -->
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.12</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <finalName>${project.artifactId}</finalName>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>com.google.code.findbugs:jsr305</exclude>
+                                    <exclude>org.slf4j:*</exclude>
+                                    <exclude>log4j:*</exclude>
+                                </excludes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <!-- Do not copy the signatures in the META-INF folder.
+                                    Otherwise, this might cause SecurityExceptions when using the JAR. -->
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.9.0</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!--
+        maven中有三种classpath
+        1.compile：默认范围，编译、测试、运行都有效
+        2.provided：在编译和测试时有效
+        3.runtime：在测试和运行时有效
+        4.test：只在测试时有效
+        5.system：在编译和测试时有效，与本机系统关联，可移植性差
+     -->
+    <profiles>
+        <!-- debug模式 -->
+        <profile>
+            <id>debug</id>
+            <properties>
+                <hadoop.scope>compile</hadoop.scope>
+                <flink.scope>compile</flink.scope>
+                <hive.scope>compile</hive.scope>
+            </properties>
+        </profile>
+
+        <!-- release模式 -->
+        <profile>
+            <id>release</id>
+            <properties>
+                <hadoop.scope>provided</hadoop.scope>
+                <flink.scope>provided</flink.scope>
+                <hive.scope>provided</hive.scope>
+            </properties>
+        </profile>
+    </profiles>
+</project>
