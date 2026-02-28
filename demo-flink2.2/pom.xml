@@ -56,6 +56,12 @@
       </exclusions>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.flink</groupId>
+      <artifactId>flink-runtime-web</artifactId>
+      <version>${flink.version}</version>
+      <!-- IDE 运行时需要去掉 scope provided 或者设置为 compile -->
+    </dependency>
   </dependencies>
 
   <build>

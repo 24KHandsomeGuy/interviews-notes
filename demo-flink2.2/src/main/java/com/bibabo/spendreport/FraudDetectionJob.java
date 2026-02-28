@@ -1,7 +1,7 @@
 package com.bibabo.spendreport;
 
-import org.apache.flink.configuration.ConfigOptions;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.walkthrough.common.entity.Alert;
@@ -19,13 +19,13 @@ public class FraudDetectionJob {
   static void main() throws Exception {
 
     Configuration configuration = new Configuration();
-    configuration.set(ConfigOptions.key("rest.port").intType().defaultValue(8081), 8081);
+    configuration.set(RestOptions.PORT, 8081);
     StreamExecutionEnvironment env =
         StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
 
     DataStream<Transaction> transactions =
         env.addSource(new TransactionSource()).setParallelism(1).name("transactions");
-      transactions.print("Source:::");
+    transactions.print("Source:::");
 
     DataStream<Alert> alerts =
         transactions
