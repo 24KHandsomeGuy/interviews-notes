@@ -1,4 +1,4 @@
-package com.bibabo.flink.dataset.wordcount;
+package com.bibabo.flink.wordcount;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.ExecutionEnvironment;
@@ -9,13 +9,11 @@ import org.apache.flink.api.java.operators.UnsortedGrouping;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.util.Collector;
 
-import java.nio.charset.Charset;
-
 /**
  * @author FuKuiXiang
  * @version 1.0.0
  * @date 2024/10/8 08:54
- * @Description
+ * @Description 批处理
  */
 public class WordCountBatchDemo {
 
